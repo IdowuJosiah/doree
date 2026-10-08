@@ -20,6 +20,7 @@ function productValues(fd: FormData) {
     care: str(fd, "care"),
     published: bool(fd, "published"),
     sold_out: bool(fd, "sold_out"),
+    best_seller: bool(fd, "best_seller"),
   };
 }
 
@@ -32,7 +33,7 @@ export async function createProduct(fd: FormData) {
     fail("/admin/products/new", (e as Error).message);
   }
   if (!values.name) fail("/admin/products/new", "Name is required.");
-  const { data, error } = await db.from("products").insert({ ...values, published: false }).select("id").single();
+  const { data, error } = await db.from("products").insert({ ...values, published: false, best_seller: false }).select("id").single();
   if (error) fail("/admin/products/new", error.code === "23505" ? "That slug is already used." : error.message);
   refreshPublic();
   redirect(`/admin/products/${data.id}?saved=1`);

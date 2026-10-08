@@ -54,6 +54,7 @@ export default async function EditProductPage({
           </fieldset>
           <Check label="Published (visible on the shop)" name="published" defaultChecked={p.published} />
           <Check label="Sold out" name="sold_out" defaultChecked={p.sold_out} />
+          <Check label="Best seller (shown on the home page, up to four)" name="best_seller" defaultChecked={p.best_seller} />
           <div><Save /></div>
         </form>
       </Card>

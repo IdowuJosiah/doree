@@ -2,7 +2,7 @@
 
 import { adminDb } from "@/lib/auth";
 import { contentDefaults, type LookbookPhoto } from "@/lib/data/site";
-import { PAGE_SLUGS, fail, refreshPublic, safeHref, saved, storagePath, str } from "../_lib";
+import { PAGE_SLUGS, bool, fail, refreshPublic, safeHref, saved, storagePath, str } from "../_lib";
 
 const PATH = "/admin/content";
 
@@ -14,8 +14,10 @@ const TEXT_FIELDS: Record<string, string[]> = {
   feature_panel: ["script", "title", "text", "buttonLabel", "buttonHref"],
   instagram: ["handle", "url"],
   announcement: ["text"],
+  coming_soon: ["script", "title", "text", "launch"],
 };
-const IMAGE_FIELDS: Record<string, string[]> = { home_hero: ["leftImage", "rightImage"], feature_panel: ["image"] };
+const BOOL_FIELDS: Record<string, string[]> = { coming_soon: ["enabled"] };
+const IMAGE_FIELDS: Record<string, string[]> = { home_hero: ["leftImage", "rightImage"], feature_panel: ["image"], coming_soon: ["image"] };
 
 type Db = Awaited<ReturnType<typeof adminDb>>;
 
@@ -40,6 +42,7 @@ export async function saveContent(key: string, fd: FormData) {
     const v = str(fd, f);
     value[f] = f === "buttonHref" ? safeHref(v) : f === "url" ? (/^https:\/\//.test(v) ? v : "https://www.instagram.com/") : v;
   }
+  for (const f of BOOL_FIELDS[key] ?? []) value[f] = bool(fd, f);
   await write(db, key, value);
   saved(PATH);
 }

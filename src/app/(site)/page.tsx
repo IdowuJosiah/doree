@@ -3,7 +3,9 @@ import { Cover } from "@/components/Cover";
 import { Reveal } from "@/components/Reveal";
 import { Shaped, type Shape } from "@/components/Shaped";
 import { Logo } from "@/components/Logo";
-import { listCollections } from "@/lib/data/catalog";
+import { ProductCard } from "@/components/ProductCard";
+import { SignupForm } from "@/components/SignupForm";
+import { listBestSellers, listCollections } from "@/lib/data/catalog";
 import { getSiteContent } from "@/lib/data/site";
 
 export const revalidate = 3600;
@@ -11,8 +13,8 @@ export const revalidate = 3600;
 const tileShapes: Shape[] = ["rect", "arch", "arch", "quarter", "rect"];
 
 export default async function Home() {
-  const [content, collections] = await Promise.all([getSiteContent(), listCollections()]);
-  const { home_hero: hero, brand_statement: statement, feature_panel: feature, instagram } = content;
+  const [content, collections, bestSellers] = await Promise.all([getSiteContent(), listCollections(), listBestSellers(4)]);
+  const { home_hero: hero, brand_statement: statement, feature_panel: feature, coming_soon: comingSoon } = content;
   const tiles = collections.slice(0, tileShapes.length);
 
   return (
@@ -69,7 +71,31 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 4. Feature split */}
+      {/* 4. Best sellers */}
+      {bestSellers.length > 0 && (
+        <section className="section container-page">
+          <Reveal>
+            <div className="mb-12 flex flex-wrap items-end justify-between gap-6">
+              <div>
+                <p className="script-line">Loved the most</p>
+                <h2 className="display-xl">Best sellers</h2>
+              </div>
+              <Link href="/shop" className="btn-outline">
+                Shop all
+              </Link>
+            </div>
+          </Reveal>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-12 lg:grid-cols-4 lg:gap-x-6">
+            {bestSellers.map((p) => (
+              <Reveal key={p.id}>
+                <ProductCard product={p} />
+              </Reveal>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 5. Feature split */}
       <section className="grid lg:grid-cols-2">
         <div className="relative min-h-[24rem]">
           <Cover src={feature.image} alt={feature.title} sizes="(min-width: 1024px) 50vw, 100vw" />
@@ -85,43 +111,27 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 5. Instagram */}
-      <section className="section container-page">
-        <Reveal>
-          <h2 className="mb-8 text-center font-display text-3xl">
-            <a href={instagram.url} target="_blank" rel="noopener noreferrer" className="hover:text-olive">
-              {instagram.handle}
-            </a>
-          </h2>
-        </Reveal>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-          {Array.from({ length: 6 }, (_, i) => (
-            <a
-              key={i}
-              href={instagram.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`Instagram photo ${i + 1}`}
-              className={`aspect-square bg-cream-deep ${i >= 4 ? "hidden sm:block" : ""}`}
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* 6. Newsletter */}
+      {/* 6. Coming soon, with email sign-up (a plain newsletter band when switched off) */}
       <section className="bg-cream-deep">
-        <div className="section container-page flex flex-col items-center gap-6 text-center">
-          <p className="font-display text-2xl">Be the first to hear about new collections.</p>
-          <form className="flex w-full max-w-md flex-col gap-3 sm:flex-row">
-            <label htmlFor="newsletter-email" className="sr-only">
-              Email address
-            </label>
-            <input id="newsletter-email" type="email" required placeholder="Email address" className="field flex-1" />
-            <button type="submit" className="btn-primary">
-              Subscribe
-            </button>
-          </form>
-        </div>
+        {comingSoon.enabled ? (
+          <div className="section container-page grid items-center gap-10 lg:grid-cols-2 lg:gap-24">
+            <Reveal className="mx-auto w-full max-w-sm">
+              <Shaped image={{ src: comingSoon.image || undefined, alt: comingSoon.title }} shape="arch" sizes="(min-width: 1024px) 24rem, 80vw" className="!bg-line [&_.placeholder]:!bg-line" />
+            </Reveal>
+            <Reveal>
+              <p className="script-line">{comingSoon.script}</p>
+              <h2 className="mt-2 font-display text-4xl uppercase lg:text-6xl">{comingSoon.title}</h2>
+              {comingSoon.launch && <p className="label mt-4 text-olive">{comingSoon.launch}</p>}
+              <p className="mb-8 mt-4 max-w-md">{comingSoon.text}</p>
+              <SignupForm source="coming_soon" buttonLabel="Notify me" />
+            </Reveal>
+          </div>
+        ) : (
+          <div className="section container-page flex flex-col items-center gap-6 text-center">
+            <p className="font-display text-2xl">Be the first to hear about new collections.</p>
+            <SignupForm source="newsletter" buttonLabel="Subscribe" />
+          </div>
+        )}
       </section>
     </>
   );

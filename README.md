@@ -13,7 +13,7 @@ npm run dev
 ### Database
 
 1. Create a Supabase project.
-2. In the Supabase SQL editor, open a new query tab and run `supabase/migrations/0001_init.sql`, then, in another new tab, `supabase/seed.sql` (sample products, collections, and placeholder shipping fees). Copy each file whole: on GitHub open the file, click **Raw**, select all and copy. Make sure nothing is highlighted in the editor before pressing Run, or only the highlighted part runs. Both files are safe to run again.
+2. In the Supabase SQL editor, open a new query tab and run `supabase/migrations/0001_init.sql`, then, in another new tab, `supabase/seed.sql` (sample products, collections, and placeholder shipping fees). Copy each file whole: on GitHub open the file, click **Raw**, select all and copy. Make sure nothing is highlighted in the editor before pressing Run, or only the highlighted part runs. Then run `supabase/migrations/0002_best_sellers_and_signups.sql` the same way. All three files are safe to run again.
 3. Create the admin user in Supabase Auth, then give them the admin role. The role lives in `app_metadata`, which users cannot edit themselves:
 
 ```sql
@@ -31,7 +31,9 @@ They sign in at `/login` and then open `/admin`. The admin area is not linked fr
 | Products, variants, stock, images, collections | Database, edited in `/admin/products` and `/admin/collections` |
 | Orders and their status | Database, `/admin/orders` |
 | Shipping fixed-fee states and amounts | Database, `/admin/shipping` (nothing is hard-coded) |
-| Hero, statement, feature panel, announcement, Instagram, lookbook, guides and policies | Database (`site_content`), `/admin/content` |
+| Hero, statement, feature panel, coming-soon collection, announcement, Instagram link, lookbook, guides and policies | Database (`site_content`), `/admin/content` |
+| Home page best sellers | Tick "Best seller" on up to four products; if none are ticked, the top sellers by paid orders are shown |
+| Email sign-ups from the home page | Database (`subscribers`), `/admin/subscribers` |
 | Brand tokens | `src/app/globals.css` |
 | Logos | `public/brand/` |
 

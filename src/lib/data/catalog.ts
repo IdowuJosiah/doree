@@ -82,6 +82,35 @@ export async function listProducts(): Promise<Product[]> {
   return (data ?? []).map(toProduct);
 }
 
+/**
+ * Products Dorée has ticked as best sellers. If none are ticked, falls back to
+ * the published products that have sold the most.
+ */
+export async function listBestSellers(limit = 4): Promise<Product[]> {
+  const db = publicClient();
+  if (!db) return [];
+  const { data, error } = await db
+    .from("products")
+    .select(PRODUCT_COLUMNS)
+    .eq("best_seller", true)
+    .order("created_at", { ascending: false })
+    .limit(limit)
+    .returns<ProductRow[]>();
+  if (error) return onReadError(error, [], "best sellers");
+  if (data?.length) return data.map(toProduct);
+
+  const { data: ranked, error: rankError } = await db.rpc("best_selling_product_ids", { max_count: limit });
+  if (rankError) return onReadError(rankError, [], "best sellers");
+  const ids = ((ranked ?? []) as (string | Record<string, string>)[]).map((r) =>
+    typeof r === "string" ? r : r.best_selling_product_ids,
+  );
+  if (!ids.length) return [];
+
+  const { data: rows, error: rowsError } = await db.from("products").select(PRODUCT_COLUMNS).in("id", ids).returns<ProductRow[]>();
+  if (rowsError) return onReadError(rowsError, [], "best sellers");
+  return (rows ?? []).sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id)).map(toProduct);
+}
+
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   const db = publicClient();
   if (!db) return null;

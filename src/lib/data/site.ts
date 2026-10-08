@@ -17,6 +17,15 @@ export type FeatureContent = {
   buttonHref: string;
   image: string;
 };
+export type ComingSoonContent = {
+  enabled: boolean;
+  script: string;
+  title: string;
+  text: string;
+  /** Free text such as "Launching March 2027". Empty hides it. */
+  launch: string;
+  image: string;
+};
 export type LookbookPhoto = { url: string; alt: string; productSlug?: string };
 
 export type SiteContent = {
@@ -25,6 +34,7 @@ export type SiteContent = {
   feature_panel: FeatureContent;
   instagram: { handle: string; url: string };
   announcement: { text: string };
+  coming_soon: ComingSoonContent;
   lookbook: { photos: LookbookPhoto[] };
 };
 
@@ -50,6 +60,14 @@ export const contentDefaults: SiteContent = {
   },
   instagram: { handle: "@doree", url: "https://www.instagram.com/" },
   announcement: { text: "" },
+  coming_soon: {
+    enabled: true,
+    script: "Coming soon",
+    title: "The new collection",
+    text: "Something new is on its way. Leave your email and be the first to know when it launches.",
+    launch: "",
+    image: "",
+  },
   lookbook: { photos: [] },
 };
 

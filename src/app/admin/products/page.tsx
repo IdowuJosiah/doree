@@ -15,6 +15,7 @@ type Row = {
   published: boolean;
   sold_out: boolean;
   archived: boolean;
+  best_seller: boolean;
   product_variants: { stock: number }[];
 };
 
@@ -23,7 +24,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: { q
   const showArchived = searchParams.archived === "1";
   let query = db
     .from("products")
-    .select("id, name, slug, price, published, sold_out, archived, product_variants(stock)")
+    .select("id, name, slug, price, published, sold_out, archived, best_seller, product_variants(stock)")
     .eq("archived", showArchived)
     .order("created_at", { ascending: false });
   const q = searchParams.q?.replace(/[%,()]/g, " ").trim();
@@ -59,7 +60,10 @@ export default async function ProductsPage({ searchParams }: { searchParams: { q
                   <td className="py-3"><Link href={`/admin/products/${p.id}`} className="text-link">{p.name}</Link></td>
                   <td>{formatPrice(p.price)}</td>
                   <td>{p.product_variants.length ? stock : "No variants"}</td>
-                  <td>{p.archived ? "Archived" : p.sold_out ? "Sold out" : p.published ? "Published" : "Draft"}</td>
+                  <td>
+                    {p.archived ? "Archived" : p.sold_out ? "Sold out" : p.published ? "Published" : "Draft"}
+                    {p.best_seller && !p.archived && <span className="block text-xs text-olive">Best seller</span>}
+                  </td>
                   <td className="flex justify-end gap-2 py-2">
                     <form action={duplicateProduct.bind(null, p.id)}><Small>Duplicate</Small></form>
                     <form action={setArchived.bind(null, p.id, !p.archived)}><Small>{p.archived ? "Restore" : "Archive"}</Small></form>

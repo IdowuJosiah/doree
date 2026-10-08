@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { adminDb } from "@/lib/auth";
 import { contentDefaults, type LookbookPhoto } from "@/lib/data/site";
 import { PAGE_SLUGS } from "../_lib";
-import { Card, Field, Notice, Save, Small, TextArea } from "../_components/ui";
+import { Card, Check, Field, Notice, Save, Small, TextArea } from "../_components/ui";
 import { ImageUploader } from "../_components/ImageUploader";
 import {
   addLookbookPhotos, clearContentImage, deleteLookbookPhoto, moveLookbookPhoto,
@@ -40,6 +40,7 @@ export default async function ContentPage({ searchParams }: { searchParams: { er
   const feature = get("feature_panel");
   const insta = get("instagram");
   const announcement = get("announcement");
+  const comingSoon = { ...contentDefaults.coming_soon, ...((rows.get("coming_soon") as unknown as Partial<typeof contentDefaults.coming_soon>) ?? {}) };
   const lookbook = ((rows.get("lookbook") as unknown as { photos?: LookbookPhoto[] })?.photos ?? []);
 
   return (
@@ -87,7 +88,19 @@ export default async function ContentPage({ searchParams }: { searchParams: { er
         <div className="mt-6"><Image contentKey="feature_panel" field="image" url={feature.image} label="Photo" /></div>
       </Card>
 
-      <Card title="Instagram">
+      <Card title="Coming soon" hint="The last section of the home page: the upcoming collection with an email sign-up. Switch it off to show a plain newsletter sign-up instead. Sign-ups are listed under Subscribers.">
+        <form action={saveContent.bind(null, "coming_soon")} className="grid max-w-xl gap-4">
+          <Check label="Show the upcoming collection" name="enabled" defaultChecked={comingSoon.enabled} />
+          <Field label="Script line" name="script" defaultValue={comingSoon.script} />
+          <Field label="Collection name" name="title" defaultValue={comingSoon.title} />
+          <TextArea label="Short text" name="text" defaultValue={comingSoon.text} rows={2} />
+          <Field label="Launch line (optional)" name="launch" defaultValue={comingSoon.launch} hint="For example: Launching March 2027" />
+          <div><Save /></div>
+        </form>
+        <div className="mt-6"><Image contentKey="coming_soon" field="image" url={comingSoon.image} label="Teaser photo (shown in an arch)" /></div>
+      </Card>
+
+      <Card title="Instagram" hint="Used for the Instagram link in the footer.">
         <form action={saveContent.bind(null, "instagram")} className="grid max-w-xl gap-4">
           <Field label="Handle" name="handle" defaultValue={insta.handle} />
           <Field label="Profile link" name="url" defaultValue={insta.url} hint="Must start with https://" />
