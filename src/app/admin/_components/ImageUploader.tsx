@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createBrowserSupabase } from "@/lib/supabase/browser";
+import { looksLikeImage, webVersion } from "./prepare-image";
 
 const MAX_BYTES = 25 * 1024 * 1024;
 
@@ -23,6 +24,7 @@ export function ImageUploader({
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [status, setStatus] = useState("");
 
   async function handle(files: FileList | null) {
     if (!files?.length) return;
@@ -31,31 +33,49 @@ export function ImageUploader({
     try {
       const storage = createBrowserSupabase().storage.from("media");
       const urls: string[] = [];
+      const failed: string[] = [];
       for (const file of Array.from(files)) {
-        if (!file.type.startsWith("image/")) throw new Error(`${file.name} is not an image.`);
-        if (file.size > MAX_BYTES) throw new Error(`${file.name} is larger than 25 MB.`);
-        const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-        const path = `${folder}/${crypto.randomUUID()}.${ext}`;
-        const { error: uploadError } = await storage.upload(path, file, { contentType: file.type, cacheControl: "31536000" });
-        if (uploadError) throw new Error(uploadError.message);
-        urls.push(storage.getPublicUrl(path).data.publicUrl);
+        try {
+          if (!looksLikeImage(file)) throw new Error(`${file.name} is not an image.`);
+          if (file.size > MAX_BYTES) throw new Error(`${file.name} is larger than 25 MB.`);
+          const id = crypto.randomUUID();
+          const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+          setStatus(`Preparing ${file.name}…`);
+          const web = await webVersion(file);
+
+          setStatus(`Uploading ${file.name}…`);
+          // The original is kept as uploaded; the site shows the web version.
+          const original = await storage.upload(`originals/${folder}/${id}.${ext}`, file, { contentType: file.type || "application/octet-stream" });
+          if (original.error) throw new Error(`${file.name}: ${original.error.message}`);
+          const path = `${folder}/${id}.jpg`;
+          const { error: uploadError } = await storage.upload(path, web, { contentType: "image/jpeg", cacheControl: "31536000" });
+          if (uploadError) throw new Error(`${file.name}: ${uploadError.message}`);
+          urls.push(storage.getPublicUrl(path).data.publicUrl);
+        } catch (e) {
+          // Keep going: one bad file should not lose the others.
+          failed.push(e instanceof Error ? e.message : `${file.name} could not be uploaded.`);
+        }
       }
-      await onUploaded(urls);
-      router.refresh();
+      if (urls.length) {
+        await onUploaded(urls);
+        router.refresh();
+      }
+      if (failed.length) setError(failed.join(" "));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Upload failed.");
     } finally {
       setBusy(false);
+      setStatus("");
     }
   }
 
   return (
     <div>
       <label className="btn-outline cursor-pointer !min-h-[40px] !px-5 !py-2">
-        {busy ? "Uploading…" : label}
+        {busy ? status || "Working…" : label}
         <input
           type="file"
-          accept="image/*"
+          accept="image/*,.heic,.heif"
           multiple={multiple}
           disabled={busy}
           className="sr-only"

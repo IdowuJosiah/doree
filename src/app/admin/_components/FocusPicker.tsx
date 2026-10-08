@@ -11,11 +11,17 @@ const parse = (v: string): [number, number] => {
 // is saved as the image's object_position (for example "40% 25%").
 export function FocusPicker({ src, initial, name = "object_position" }: { src: string; initial: string; name?: string }) {
   const [[x, y], setPoint] = useState<[number, number]>(parse(initial));
+  const [broken, setBroken] = useState(false);
   const value = `${x}% ${y}%`;
 
   return (
     <div className="flex flex-wrap items-start gap-4">
       <input type="hidden" name={name} value={value} />
+      {broken && (
+        <p role="alert" className="w-full border border-red-800 px-3 py-2 text-sm text-red-800">
+          This photo cannot be displayed (often an iPhone HEIC file). Delete it and upload it again; the uploader now converts it automatically.
+        </p>
+      )}
       <div>
         <p className="label mb-1">Focus point</p>
         <button
@@ -31,7 +37,7 @@ export function FocusPicker({ src, initial, name = "object_position" }: { src: s
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={src} alt="" className="block max-h-48 w-auto" />
+          <img src={src} alt="" className="block max-h-48 w-auto" onError={() => setBroken(true)} />
           <span
             aria-hidden="true"
             className="pointer-events-none absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-cream bg-olive"
