@@ -18,7 +18,6 @@ function productValues(fd: FormData) {
     description: str(fd, "description"),
     materials: str(fd, "materials"),
     care: str(fd, "care"),
-    published: bool(fd, "published"),
     sold_out: bool(fd, "sold_out"),
     best_seller: bool(fd, "best_seller"),
   };
@@ -33,10 +32,37 @@ export async function createProduct(fd: FormData) {
     fail("/admin/products/new", (e as Error).message);
   }
   if (!values.name) fail("/admin/products/new", "Name is required.");
-  const { data, error } = await db.from("products").insert({ ...values, published: false, best_seller: false }).select("id").single();
+  const publish = str(fd, "intent") === "publish";
+  const stock = Math.max(0, parseInt(str(fd, "stock") || "0", 10) || 0);
+
+  const { data, error } = await db
+    .from("products")
+    .insert({ ...values, published: publish, best_seller: false })
+    .select("id")
+    .single();
   if (error) fail("/admin/products/new", error.code === "23505" ? "That slug is already used." : error.message);
+
+  // Every product needs at least one option to be bought. Start with "One
+  // size"; Dorée can rename it or add sizes on the next screen.
+  const { error: variantError } = await db.from("product_variants").insert({ product_id: data.id, label: "One size", stock });
+  if (variantError) fail(`/admin/products/${data.id}`, variantError.message);
+
   refreshPublic();
-  redirect(`/admin/products/${data.id}?saved=1`);
+  redirect(`/admin/products/${data.id}?${publish ? "published=1" : "saved=1"}`);
+}
+
+/** Puts a product on the shop, or takes it off. */
+export async function setPublished(id: string, publish: boolean, returnTo: string) {
+  const db = await adminDb();
+  const back = returnTo.startsWith("/admin/products") ? returnTo : `/admin/products/${id}`;
+  if (publish) {
+    const { count } = await db.from("product_variants").select("id", { count: "exact", head: true }).eq("product_id", id);
+    if (!count) fail(back, "Add at least one size or option under Variants and stock before publishing.");
+  }
+  const { error } = await db.from("products").update({ published: publish, ...(publish ? { archived: false } : {}) }).eq("id", id);
+  if (error) fail(back, error.message);
+  refreshPublic();
+  redirect(`${back}${back.includes("?") ? "&" : "?"}${publish ? "published=1" : "unpublished=1"}`);
 }
 
 export async function saveProduct(id: string, fd: FormData) {

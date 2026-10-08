@@ -6,7 +6,7 @@ import { centsToDollars } from "@/lib/format";
 import { Card, Check, Field, Notice, Save, Small, TextArea } from "../../_components/ui";
 import { FocusPicker } from "../../_components/FocusPicker";
 import { ImageUploader } from "../../_components/ImageUploader";
-import { addImages, addVariant, deleteImage, deleteVariant, moveImage, saveImage, saveProduct, saveVariant } from "../actions";
+import { addImages, addVariant, deleteImage, deleteVariant, moveImage, saveImage, saveProduct, saveVariant, setPublished } from "../actions";
 
 export const metadata: Metadata = { title: "Edit product" };
 
@@ -15,7 +15,7 @@ export default async function EditProductPage({
   searchParams,
 }: {
   params: { id: string };
-  searchParams: { error?: string; saved?: string };
+  searchParams: { error?: string; saved?: string; published?: string; unpublished?: string };
 }) {
   const db = await adminDb();
   const { data: p } = await db.from("products").select("*").eq("id", params.id).maybeSingle();
@@ -35,6 +35,25 @@ export default async function EditProductPage({
       <h1 className="mb-6 mt-2 font-display text-4xl uppercase">{p.name}</h1>
       <Notice searchParams={searchParams} />
 
+      <div className={`mb-10 flex flex-wrap items-center justify-between gap-4 border p-5 ${p.published ? "border-olive" : "border-line bg-cream-deep"}`}>
+        <div>
+          <p className="label">{p.published ? "Live on the shop" : p.archived ? "Archived" : "Draft"}</p>
+          <p className="text-sm">
+            {p.published ? (
+              <>Customers can see and buy this piece. <a href={`/product/${p.slug}`} target="_blank" rel="noopener noreferrer" className="text-link">View on the shop</a></>
+            ) : (
+              "Only you can see this. Publish it when the details, sizes and photos are ready."
+            )}
+          </p>
+          {!p.published && (variants?.length ?? 0) === 0 && <p className="mt-1 text-sm text-red-800">Add at least one size or option below before publishing.</p>}
+          {!p.published && (variants?.length ?? 0) > 0 && (variants ?? []).every((v) => v.stock <= 0) && <p className="mt-1 text-sm text-olive">Stock is 0, so it will show as sold out until you add stock.</p>}
+          {!p.published && (images?.length ?? 0) === 0 && <p className="mt-1 text-sm text-olive">No photos yet. It will show a plain placeholder.</p>}
+        </div>
+        <form action={setPublished.bind(null, p.id, !p.published, `/admin/products/${p.id}`)}>
+          <button type="submit" className={p.published ? "btn-outline" : "btn-primary"}>{p.published ? "Unpublish" : "Publish"}</button>
+        </form>
+      </div>
+
       <Card title="Details">
         <form action={saveProduct.bind(null, p.id)} className="grid max-w-2xl gap-5">
           <Field label="Name" name="name" defaultValue={p.name} required />
@@ -52,7 +71,6 @@ export default async function EditProductPage({
               </label>
             ))}
           </fieldset>
-          <Check label="Published (visible on the shop)" name="published" defaultChecked={p.published} />
           <Check label="Sold out" name="sold_out" defaultChecked={p.sold_out} />
           <Check label="Best seller (shown on the home page, up to four)" name="best_seller" defaultChecked={p.best_seller} />
           <div><Save /></div>

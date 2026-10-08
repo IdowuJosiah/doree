@@ -3,7 +3,7 @@ import Link from "next/link";
 import { adminDb } from "@/lib/auth";
 import { formatPrice } from "@/lib/format";
 import { Notice, Small } from "../_components/ui";
-import { duplicateProduct, setArchived } from "./actions";
+import { duplicateProduct, setArchived, setPublished } from "./actions";
 
 export const metadata: Metadata = { title: "Products" };
 
@@ -19,7 +19,7 @@ type Row = {
   product_variants: { stock: number }[];
 };
 
-export default async function ProductsPage({ searchParams }: { searchParams: { q?: string; archived?: string; error?: string; saved?: string } }) {
+export default async function ProductsPage({ searchParams }: { searchParams: { q?: string; archived?: string; error?: string; saved?: string; published?: string; unpublished?: string } }) {
   const db = await adminDb();
   const showArchived = searchParams.archived === "1";
   let query = db
@@ -65,6 +65,9 @@ export default async function ProductsPage({ searchParams }: { searchParams: { q
                     {p.best_seller && !p.archived && <span className="block text-xs text-olive">Best seller</span>}
                   </td>
                   <td className="flex justify-end gap-2 py-2">
+                    {!p.archived && (
+                      <form action={setPublished.bind(null, p.id, !p.published, "/admin/products")}><Small>{p.published ? "Unpublish" : "Publish"}</Small></form>
+                    )}
                     <form action={duplicateProduct.bind(null, p.id)}><Small>Duplicate</Small></form>
                     <form action={setArchived.bind(null, p.id, !p.archived)}><Small>{p.archived ? "Restore" : "Archive"}</Small></form>
                   </td>

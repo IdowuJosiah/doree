@@ -1,8 +1,14 @@
 import type { ReactNode } from "react";
 
-export function Notice({ searchParams }: { searchParams: { error?: string; saved?: string } }) {
+export function Notice({ searchParams }: { searchParams: { error?: string; saved?: string; published?: string; unpublished?: string } }) {
   if (searchParams.error) {
     return <p role="alert" className="mb-6 border border-red-800 px-4 py-3 text-sm text-red-800">{searchParams.error}</p>;
+  }
+  if (searchParams.published) {
+    return <p role="status" className="mb-6 border border-olive bg-olive px-4 py-3 text-sm text-cream">Published. It is now live on the shop (allow up to a minute).</p>;
+  }
+  if (searchParams.unpublished) {
+    return <p role="status" className="mb-6 border border-olive px-4 py-3 text-sm text-olive">Unpublished. It is no longer visible on the shop.</p>;
   }
   if (searchParams.saved) {
     return <p role="status" className="mb-6 border border-olive px-4 py-3 text-sm text-olive">Saved.</p>;
