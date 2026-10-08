@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Cover } from "@/components/Cover";
-import { ProductCard } from "@/components/ProductCard";
+import { CategoryLinks } from "@/components/CategoryLinks";
+import { ProductGrid } from "@/components/ProductGrid";
 import { getCollectionWithProducts, listCollections } from "@/lib/data/catalog";
 
 type Props = { params: { collection: string } };
@@ -27,23 +27,7 @@ export default async function CollectionPage({ params }: Props) {
       </div>
       <h1 className="display-xl">{collection.name}</h1>
       {collection.intro && <p className="mt-4 max-w-xl">{collection.intro}</p>}
-      <nav aria-label="Categories" className="label mt-10 flex flex-wrap gap-6 border-y border-line py-4">
-        <Link href="/shop" className="hover:text-olive">All</Link>
-        {collections.map((c) => (
-          <Link key={c.id} href={`/shop/${c.slug}`} className={c.id === collection.id ? "text-olive" : "hover:text-olive"}>
-            {c.name}
-          </Link>
-        ))}
-      </nav>
-      {products.length === 0 ? (
-        <p className="mt-12">Nothing here yet.</p>
-      ) : (
-        <div className="mt-12 grid grid-cols-2 gap-x-4 gap-y-12 lg:grid-cols-3 lg:gap-x-6">
-          {products.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
-        </div>
-      )}
+      <ProductGrid products={products} filters={<CategoryLinks collections={collections} current={collection.slug} />} />
     </section>
   );
 }

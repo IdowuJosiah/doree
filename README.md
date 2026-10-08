@@ -13,7 +13,7 @@ npm run dev
 ### Database
 
 1. Create a Supabase project.
-2. In the Supabase SQL editor, open a new query tab and run `supabase/migrations/0001_init.sql`, then, in another new tab, `supabase/seed.sql` (sample products, collections, and placeholder shipping fees). Copy each file whole: on GitHub open the file, click **Raw**, select all and copy. Make sure nothing is highlighted in the editor before pressing Run, or only the highlighted part runs. Then run `supabase/migrations/0002_best_sellers_and_signups.sql` the same way. All three files are safe to run again.
+2. In the Supabase SQL editor, open a new query tab and run `supabase/migrations/0001_init.sql`, then, in another new tab, `supabase/seed.sql` (sample products, collections, and placeholder shipping fees). Copy each file whole: on GitHub open the file, click **Raw**, select all and copy. Make sure nothing is highlighted in the editor before pressing Run, or only the highlighted part runs. Then run `supabase/migrations/0002_best_sellers_and_signups.sql` and `supabase/migrations/0003_contact_messages.sql` the same way. All of these files are safe to run again.
 3. Create the admin user in Supabase Auth, then give them the admin role. The role lives in `app_metadata`, which users cannot edit themselves:
 
 ```sql
@@ -35,6 +35,7 @@ They sign in at `/login` and then open `/admin`. The admin area is not linked fr
 | Hero, statement, feature panel, coming-soon collection, announcement, Instagram link, lookbook, guides and policies | Database (`site_content`), `/admin/content` |
 | Home page best sellers | Tick "Best seller" on up to four products; if none are ticked, the top sellers by paid orders are shown |
 | Email sign-ups from the home page | Database (`subscribers`), `/admin/subscribers` |
+| Contact form messages | Database (`contact_messages`); readable in the Supabase table editor for now |
 | Brand tokens | `src/app/globals.css` |
 | Logos | `public/brand/` |
 
@@ -45,6 +46,7 @@ Pushing to the branch deploys automatically. Public pages refresh at most a minu
 ### Checkout and payments
 
 - `POST /api/checkout` validates the bag, recalculates every price and the shipping fee on the server from the database (the request carries no amounts), and creates the order as `pending`. No payment is taken and no stock changes.
+- The checkout page loads the Square Web Payments card form (`NEXT_PUBLIC_SQUARE_APP_ID`, `NEXT_PUBLIC_SQUARE_LOCATION_ID`); card details go straight to Square.
 - `POST /api/checkout/pay` charges the order's stored total through Square using the card token from the Web Payments SDK.
 - `POST /api/webhooks/square` verifies Square's signature. On a completed payment whose amount matches the order, it calls the `mark_order_paid` database function, which marks the order Paid, saves the payment reference and reduces stock in one transaction. It is safe to deliver twice. Failed or abandoned payments leave the order pending and stock untouched.
 - Guest orders are linked to a customer when someone confirms an account with the same email.

@@ -4,12 +4,14 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { navLinks } from "@/lib/config";
 import { Logo } from "./Logo";
+import { useCart } from "./store/Cart";
 
 const icon = { width: 22, height: 22, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.5 } as const;
 
 export function Header({ announcement = "" }: { announcement?: string }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const cart = useCart();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -66,17 +68,22 @@ export function Header({ announcement = "" }: { announcement?: string }) {
                 <path d="M12 21s-8-5-8-11a4.5 4.5 0 018-2.8A4.5 4.5 0 0120 10c0 6-8 11-8 11z" />
               </svg>
             </Link>
-            <Link href="/login" aria-label="Account" className="hidden h-11 w-11 items-center justify-center hover:text-olive lg:flex">
+            <Link href="/account" aria-label="Account" className="hidden h-11 w-11 items-center justify-center hover:text-olive lg:flex">
               <svg {...icon} aria-hidden="true">
                 <circle cx="12" cy="8" r="4" />
                 <path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
               </svg>
             </Link>
-            <button type="button" aria-label="Bag, 0 items" className="relative -mr-3 flex h-11 w-11 items-center justify-center hover:text-olive lg:mr-0">
+            <button
+              type="button"
+              aria-label={`Bag, ${cart.count} ${cart.count === 1 ? "item" : "items"}`}
+              onClick={cart.open}
+              className="relative -mr-3 flex h-11 w-11 items-center justify-center hover:text-olive lg:mr-0"
+            >
               <svg {...icon} aria-hidden="true">
                 <path d="M5 8h14l-1 12H6L5 8zM9 8V6a3 3 0 016 0v2" />
               </svg>
-              <span className="absolute right-0.5 top-1 text-xs">0</span>
+              {cart.count > 0 && <span className="absolute right-0.5 top-1 text-xs">{cart.count}</span>}
             </button>
           </div>
         </div>
@@ -94,7 +101,7 @@ export function Header({ announcement = "" }: { announcement?: string }) {
             <span className="w-11" />
           </div>
           <nav className="container-page flex flex-1 flex-col justify-center gap-6" aria-label="Mobile">
-            {[...navLinks, { href: "/login", label: "Account" }, { href: "/account/wishlist", label: "Wishlist" }].map((l) => (
+            {[...navLinks, { href: "/account", label: "Account" }, { href: "/account/wishlist", label: "Wishlist" }].map((l) => (
               <Link key={l.href} href={l.href} onClick={() => setOpen(false)} className="font-display text-4xl hover:text-olive">
                 {l.label}
               </Link>

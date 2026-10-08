@@ -38,4 +38,5 @@ export const PAGE_SLUGS = [
   { slug: "returns", label: "Returns policy" },
   { slug: "privacy", label: "Privacy policy" },
   { slug: "terms", label: "Terms" },
+  { slug: "about", label: "About page" },
 ];

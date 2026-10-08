@@ -133,7 +133,7 @@ export default async function ContentPage({ searchParams }: { searchParams: { er
       {PAGE_SLUGS.map(({ slug, label }) => {
         const page = rows.get(`page:${slug}`) ?? {};
         return (
-          <Card key={slug} title={label} hint={`Text page at /${["shipping", "returns", "privacy", "terms"].includes(slug) ? `policies/${slug}` : `guides/${slug}`}`}>
+          <Card key={slug} title={label} hint={`Text page at /${slug === "about" ? "about" : ["shipping", "returns", "privacy", "terms"].includes(slug) ? `policies/${slug}` : `guides/${slug}`}. Blank lines start a new paragraph, "## " starts a heading and "- " a bullet.`}>
             <form action={savePage.bind(null, slug)} className="grid max-w-2xl gap-4">
               <Field label="Title" name="title" defaultValue={page.title ?? label} />
               <TextArea label="Short intro" name="intro" defaultValue={page.intro ?? ""} rows={2} />

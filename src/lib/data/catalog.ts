@@ -111,6 +111,14 @@ export async function listBestSellers(limit = 4): Promise<Product[]> {
   return (rows ?? []).sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id)).map(toProduct);
 }
 
+export async function listProductsByIds(ids: string[]): Promise<Product[]> {
+  const db = publicClient();
+  if (!db || ids.length === 0) return [];
+  const { data, error } = await db.from("products").select(PRODUCT_COLUMNS).in("id", ids).returns<ProductRow[]>();
+  if (error) return onReadError(error, [], "products");
+  return (data ?? []).sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id)).map(toProduct);
+}
+
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   const db = publicClient();
   if (!db) return null;
