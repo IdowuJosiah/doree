@@ -1,4 +1,5 @@
 import { publicClient } from "@/lib/supabase/public";
+import { onReadError } from "./read-error";
 
 export type HeroContent = {
   script: string;
@@ -58,7 +59,7 @@ export async function getSiteContent(): Promise<SiteContent> {
   const db = publicClient();
   if (!db) return content;
   const { data, error } = await db.from("site_content").select("key, value");
-  if (error) throw error;
+  if (error) return onReadError(error, content, "site content");
   for (const row of data ?? []) {
     if (row.key in content) {
       const key = row.key as keyof SiteContent;
@@ -85,6 +86,6 @@ export async function getShippingSettings(): Promise<ShippingSettings> {
   const db = publicClient();
   if (!db) return emptyShipping;
   const { data, error } = await db.from("shipping_settings").select("fixed_fee_states, fixed_fee, other_fee").eq("id", 1).maybeSingle();
-  if (error) throw error;
+  if (error) return onReadError(error, emptyShipping, "shipping settings");
   return toShippingSettings(data);
 }

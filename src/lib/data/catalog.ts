@@ -1,4 +1,5 @@
 import { publicClient } from "@/lib/supabase/public";
+import { onReadError } from "./read-error";
 
 export type ProductImage = {
   src?: string;
@@ -77,7 +78,7 @@ export async function listProducts(): Promise<Product[]> {
     .select(PRODUCT_COLUMNS)
     .order("created_at", { ascending: false })
     .returns<ProductRow[]>();
-  if (error) throw error;
+  if (error) return onReadError(error, [], "products");
   return (data ?? []).map(toProduct);
 }
 
@@ -89,7 +90,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     .select(PRODUCT_COLUMNS)
     .eq("slug", slug)
     .maybeSingle<ProductRow>();
-  if (error) throw error;
+  if (error) return onReadError(error, null, "product");
   return data ? toProduct(data) : null;
 }
 
@@ -100,7 +101,7 @@ export async function listCollections(): Promise<Collection[]> {
     .from("collections")
     .select("id, name, slug, banner_url, intro")
     .order("sort_order");
-  if (error) throw error;
+  if (error) return onReadError(error, [], "collections");
   return (data ?? []).map((c) => ({ id: c.id, name: c.name, slug: c.slug, bannerUrl: c.banner_url, intro: c.intro }));
 }
 
@@ -112,7 +113,7 @@ export async function getCollectionWithProducts(slug: string) {
     .select("id, name, slug, banner_url, intro")
     .eq("slug", slug)
     .maybeSingle();
-  if (error) throw error;
+  if (error) return onReadError(error, null, "collection");
   if (!c) return null;
 
   const { data: links, error: linkError } = await db
@@ -121,7 +122,7 @@ export async function getCollectionWithProducts(slug: string) {
     .eq("collection_id", c.id)
     .order("sort_order")
     .returns<{ sort_order: number; products: ProductRow | null }[]>();
-  if (linkError) throw linkError;
+  if (linkError) return onReadError(linkError, null, "collection products");
 
   const collection: Collection = { id: c.id, name: c.name, slug: c.slug, bannerUrl: c.banner_url, intro: c.intro };
   const products = (links ?? []).flatMap((l) => (l.products ? [toProduct(l.products)] : []));

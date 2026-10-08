@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { siteConfig } from "@/lib/config";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -28,6 +29,8 @@ export async function POST(request: Request) {
         return data === true;
       },
     });
+    // Stock changed, so cached shop pages may need to show "Sold out".
+    if (result === "paid") revalidatePath("/", "layout");
     if (result === "amount_mismatch" || result === "unknown_order") console.error("square webhook", result);
     return NextResponse.json({ result });
   } catch (e) {
