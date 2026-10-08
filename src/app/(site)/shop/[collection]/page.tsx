@@ -7,7 +7,8 @@ import { getCollectionWithProducts, listCollections } from "@/lib/data/catalog";
 
 type Props = { params: { collection: string } };
 
-export const revalidate = 3600;
+// Refreshes at most a minute after any database change, so no redeploy is needed.
+export const revalidate = 60;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const found = await getCollectionWithProducts(params.collection);

@@ -4,7 +4,8 @@ import { ProductCard } from "@/components/ProductCard";
 import { listCollections, listProducts } from "@/lib/data/catalog";
 
 export const metadata: Metadata = { title: "Shop" };
-export const revalidate = 3600;
+// Refreshes at most a minute after any database change, so no redeploy is needed.
+export const revalidate = 60;
 
 export default async function ShopPage() {
   const [products, collections] = await Promise.all([listProducts(), listCollections()]);

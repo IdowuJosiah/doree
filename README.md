@@ -28,7 +28,8 @@ They sign in at `/login` and then open `/admin`. The admin area is not linked fr
 
 | What | Where |
 | --- | --- |
-| Products, variants, stock, images, collections | Database, edited in `/admin/products` and `/admin/collections` |
+| Products, variants, images, collections | Database, edited in `/admin/products` and `/admin/collections` |
+| Stock levels across all products, low and out-of-stock alerts | `/admin/inventory` |
 | Orders and their status | Database, `/admin/orders` |
 | Shipping fixed-fee states and amounts | Database, `/admin/shipping` (nothing is hard-coded) |
 | Hero, statement, feature panel, coming-soon collection, announcement, Instagram link, lookbook, guides and policies | Database (`site_content`), `/admin/content` |
@@ -38,6 +39,8 @@ They sign in at `/login` and then open `/admin`. The admin area is not linked fr
 | Logos | `public/brand/` |
 
 Prices are stored in cents and formatted only for display.
+
+Pushing to the branch deploys automatically. Public pages refresh at most a minute after any database change (and immediately after an admin save), so running a migration or editing data never needs a redeploy.
 
 ### Checkout and payments
 

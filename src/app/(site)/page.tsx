@@ -8,7 +8,8 @@ import { SignupForm } from "@/components/SignupForm";
 import { listBestSellers, listCollections } from "@/lib/data/catalog";
 import { getSiteContent } from "@/lib/data/site";
 
-export const revalidate = 3600;
+// Refreshes at most a minute after any database change, so no redeploy is needed.
+export const revalidate = 60;
 
 const tileShapes: Shape[] = ["rect", "arch", "arch", "quarter", "rect"];
 
