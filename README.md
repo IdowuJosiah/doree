@@ -22,7 +22,7 @@ set raw_app_meta_data = coalesce(raw_app_meta_data, '{}'::jsonb) || '{"role":"ad
 where email = 'owner@example.com';
 ```
 
-They sign in at `/login` and then open `/admin`. The admin area is not linked from the public site and is marked `noindex`.
+They sign in at `/admin/login`, the admin's own sign-in page (customers use `/login`). Only accounts with the admin role can sign in there; a customer's correct password is refused. The admin area is not linked from the public site and is marked `noindex`.
 
 ### Where things live
 

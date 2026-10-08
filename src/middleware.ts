@@ -5,6 +5,7 @@ import { NextResponse, type NextRequest } from "next/server";
 // role again on the server; this is the first line, not the only one.
 export async function middleware(request: NextRequest) {
   const isAdminPath = request.nextUrl.pathname.startsWith("/admin");
+  const isAdminLogin = request.nextUrl.pathname === "/admin/login";
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -12,7 +13,7 @@ export async function middleware(request: NextRequest) {
   if (isAdminPath) response.headers.set("X-Robots-Tag", "noindex, nofollow");
 
   if (!url || !key) {
-    if (isAdminPath) return NextResponse.redirect(new URL("/login", request.url));
+    if (isAdminPath && !isAdminLogin) return NextResponse.redirect(new URL("/admin/login", request.url));
     return response;
   }
 
@@ -30,8 +31,8 @@ export async function middleware(request: NextRequest) {
 
   const { data } = await supabase.auth.getUser();
 
-  if (isAdminPath && data.user?.app_metadata?.role !== "admin") {
-    const login = new URL("/login", request.url);
+  if (isAdminPath && !isAdminLogin && data.user?.app_metadata?.role !== "admin") {
+    const login = new URL("/admin/login", request.url);
     login.searchParams.set("next", request.nextUrl.pathname);
     return NextResponse.redirect(login);
   }

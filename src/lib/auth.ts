@@ -19,7 +19,7 @@ export async function getCurrentUser() {
 // checked on the server for each request.
 export async function requireAdmin() {
   const user = await getCurrentUser();
-  if (!isAdminUser(user)) redirect("/login?next=/admin");
+  if (!isAdminUser(user)) redirect("/admin/login");
   return user!;
 }
 
