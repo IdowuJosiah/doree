@@ -13,7 +13,7 @@ npm run dev
 ### Database
 
 1. Create a Supabase project.
-2. Run `supabase/migrations/0001_init.sql`, then `supabase/seed.sql` (sample products, collections, and placeholder shipping fees) in the SQL editor, or with the Supabase CLI.
+2. In the Supabase SQL editor, open a new query tab and run `supabase/migrations/0001_init.sql`, then, in another new tab, `supabase/seed.sql` (sample products, collections, and placeholder shipping fees). Copy each file whole: on GitHub open the file, click **Raw**, select all and copy. Make sure nothing is highlighted in the editor before pressing Run, or only the highlighted part runs. Both files are safe to run again.
 3. Create the admin user in Supabase Auth, then give them the admin role. The role lives in `app_metadata`, which users cannot edit themselves:
 
 ```sql
