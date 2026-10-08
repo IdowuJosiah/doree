@@ -1,11 +1,54 @@
 # Dorée
 
-Storefront for Dorée, built with Next.js (App Router), TypeScript and Tailwind CSS.
+Storefront and admin for Dorée, built with Next.js (App Router), TypeScript, Tailwind CSS and Supabase (Postgres, auth, storage).
+
+## Setup
 
 ```bash
 npm install
+cp .env.example .env.local   # fill in the Supabase and Square values
 npm run dev
 ```
 
-Brand tokens live in `src/app/globals.css`; logo files in `public/brand/`.
-Site, shipping and currency settings live in `src/lib/config.ts`.
+### Database
+
+1. Create a Supabase project.
+2. Run `supabase/migrations/0001_init.sql`, then `supabase/seed.sql` (sample products, collections, and placeholder shipping fees) in the SQL editor, or with the Supabase CLI.
+3. Create the admin user in Supabase Auth, then give them the admin role. The role lives in `app_metadata`, which users cannot edit themselves:
+
+```sql
+update auth.users
+set raw_app_meta_data = coalesce(raw_app_meta_data, '{}'::jsonb) || '{"role":"admin"}'
+where email = 'owner@example.com';
+```
+
+They sign in at `/login` and then open `/admin`. The admin area is not linked from the public site and is marked `noindex`.
+
+### Where things live
+
+| What | Where |
+| --- | --- |
+| Products, variants, stock, images, collections | Database, edited in `/admin/products` and `/admin/collections` |
+| Orders and their status | Database, `/admin/orders` |
+| Shipping fixed-fee states and amounts | Database, `/admin/shipping` (nothing is hard-coded) |
+| Hero, statement, feature panel, announcement, Instagram, lookbook, guides and policies | Database (`site_content`), `/admin/content` |
+| Brand tokens | `src/app/globals.css` |
+| Logos | `public/brand/` |
+
+Prices are stored in cents and formatted only for display.
+
+### Checkout and payments
+
+- `POST /api/checkout` validates the bag, recalculates every price and the shipping fee on the server from the database (the request carries no amounts), and creates the order as `pending`. No payment is taken and no stock changes.
+- `POST /api/checkout/pay` charges the order's stored total through Square using the card token from the Web Payments SDK.
+- `POST /api/webhooks/square` verifies Square's signature. On a completed payment whose amount matches the order, it calls the `mark_order_paid` database function, which marks the order Paid, saves the payment reference and reduces stock in one transaction. It is safe to deliver twice. Failed or abandoned payments leave the order pending and stock untouched.
+- Guest orders are linked to a customer when someone confirms an account with the same email.
+
+Subscribe the webhook to `payment.updated` in the Square dashboard and set `SQUARE_WEBHOOK_URL` to the exact URL you registered.
+
+### Tests
+
+```bash
+npm test
+npm run typecheck
+```

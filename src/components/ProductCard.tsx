@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { formatPrice } from "@/lib/format";
-import type { Product } from "@/lib/products";
+import type { Product } from "@/lib/data/catalog";
 import { Shaped } from "./Shaped";
 
 export function ProductCard({ product }: { product: Product }) {
@@ -10,7 +10,7 @@ export function ProductCard({ product }: { product: Product }) {
       <Link href={`/product/${product.slug}`} className="block">
         <div className="relative">
           <Shaped image={first} shape="arch" />
-          {second && (
+          {second?.src && (
             <div className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
               <Shaped image={second} shape="arch" />
             </div>

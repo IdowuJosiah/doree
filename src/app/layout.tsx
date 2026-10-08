@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import { Bodoni_Moda, Jost, Pinyon_Script } from "next/font/google";
-import { Footer } from "@/components/Footer";
-import { Header } from "@/components/Header";
 import { siteConfig } from "@/lib/config";
 import "./globals.css";
 
@@ -17,11 +15,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${display.variable} ${body.variable} ${script.variable}`}>
-      <body>
-        <Header />
-        <main>{children}</main>
-        <Footer />
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

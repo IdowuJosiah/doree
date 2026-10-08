@@ -1,5 +1,5 @@
 import Image from "next/image";
-import type { ProductImage } from "@/lib/products";
+import type { ProductImage } from "@/lib/data/catalog";
 
 export type Shape = "arch" | "quarter" | "quarter-mirror" | "rect";
 

@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { navLinks, siteConfig } from "@/lib/config";
+import { navLinks } from "@/lib/config";
 import { Logo } from "./Logo";
 
 const icon = { width: 22, height: 22, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.5 } as const;
 
-export function Header() {
+export function Header({ announcement = "" }: { announcement?: string }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -27,8 +27,8 @@ export function Header() {
 
   return (
     <>
-      {siteConfig.announcement && (
-        <p className="bg-olive px-4 py-2 text-center text-sm text-cream">{siteConfig.announcement}</p>
+      {announcement && (
+        <p className="bg-olive px-4 py-2 text-center text-sm text-cream">{announcement}</p>
       )}
       <header
         className={`sticky top-0 z-40 border-b border-line bg-cream transition-[height] duration-300 ${

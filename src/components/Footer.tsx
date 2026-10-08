@@ -32,7 +32,7 @@ function Column({ title, links }: { title: string; links: { href: string; label:
   );
 }
 
-export function Footer() {
+export function Footer({ instagramUrl }: { instagramUrl: string }) {
   return (
     <footer className="border-t border-line">
       <div className="container-page grid gap-10 py-16 sm:grid-cols-2 lg:grid-cols-4">
@@ -44,7 +44,7 @@ export function Footer() {
         <Column title="Help" links={help} />
         <div>
           <h2 className="label mb-4 font-sans">Follow</h2>
-          <a href={siteConfig.instagram.url} className="hover:text-olive" target="_blank" rel="noopener noreferrer">
+          <a href={instagramUrl} className="hover:text-olive" target="_blank" rel="noopener noreferrer">
             Instagram
           </a>
         </div>

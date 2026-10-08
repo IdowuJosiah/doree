@@ -1,29 +1,35 @@
 import Link from "next/link";
+import { Cover } from "@/components/Cover";
 import { Reveal } from "@/components/Reveal";
 import { Shaped, type Shape } from "@/components/Shaped";
 import { Logo } from "@/components/Logo";
-import { siteConfig } from "@/lib/config";
+import { listCollections } from "@/lib/data/catalog";
+import { getSiteContent } from "@/lib/data/site";
 
-const tiles: { shape: Shape; alt: string; label: string }[] = [
-  { shape: "rect", alt: "Earrings", label: "Earrings" },
-  { shape: "arch", alt: "Necklaces", label: "Necklaces" },
-  { shape: "arch", alt: "Bracelets", label: "Bracelets" },
-  { shape: "quarter", alt: "Rings", label: "Rings" },
-  { shape: "rect", alt: "New in", label: "New in" },
-];
+export const revalidate = 3600;
 
-export default function Home() {
+const tileShapes: Shape[] = ["rect", "arch", "arch", "quarter", "rect"];
+
+export default async function Home() {
+  const [content, collections] = await Promise.all([getSiteContent(), listCollections()]);
+  const { home_hero: hero, brand_statement: statement, feature_panel: feature, instagram } = content;
+  const tiles = collections.slice(0, tileShapes.length);
+
   return (
     <>
       {/* 1. Hero */}
       <section className="relative grid min-h-[70vh] lg:grid-cols-2">
-        <div className="bg-cream-deep" role="img" aria-label="Hero photo, left" />
-        <div className="hidden bg-line lg:block" role="img" aria-label="Hero photo, right" />
+        <div className="relative">
+          <Cover src={hero.leftImage} alt="Hero photo" priority sizes="(min-width: 1024px) 50vw, 100vw" />
+        </div>
+        <div className="relative hidden lg:block">
+          <Cover src={hero.rightImage} alt="Hero photo" priority sizes="50vw" className={hero.rightImage ? "" : "!bg-line"} />
+        </div>
         <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
-          <p className="script-line">{siteConfig.tagline}</p>
-          <h1 className="display-xl mt-2">The Soleil Collection</h1>
-          <Link href="/shop" className="btn-outline mt-8">
-            Shop now
+          <p className="script-line">{hero.script}</p>
+          <h1 className="display-xl mt-2">{hero.title}</h1>
+          <Link href={hero.buttonHref} className="btn-outline mt-8">
+            {hero.buttonLabel}
           </Link>
         </div>
       </section>
@@ -31,9 +37,7 @@ export default function Home() {
       {/* 2. Brand statement */}
       <section className="section container-page text-center">
         <Reveal>
-          <p className="mx-auto max-w-3xl font-display text-3xl lg:text-4xl">
-            Everyday jewelry, made slowly and worn for years. Each piece is designed to feel like yours.
-          </p>
+          <p className="mx-auto max-w-3xl font-display text-3xl lg:text-4xl">{statement.text}</p>
         </Reveal>
       </section>
 
@@ -46,11 +50,11 @@ export default function Home() {
           </div>
         </Reveal>
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 lg:gap-6">
-          {tiles.map((t) => (
-            <Reveal key={t.label}>
-              <Link href="/shop" className="zoom block">
-                <Shaped image={{ alt: t.alt }} shape={t.shape} />
-                <span className="label mt-3 block">{t.label}</span>
+          {tiles.map((c, i) => (
+            <Reveal key={c.id}>
+              <Link href={`/shop/${c.slug}`} className="zoom block">
+                <Shaped image={{ src: c.bannerUrl ?? undefined, alt: c.name }} shape={tileShapes[i]} />
+                <span className="label mt-3 block">{c.name}</span>
               </Link>
             </Reveal>
           ))}
@@ -67,14 +71,16 @@ export default function Home() {
 
       {/* 4. Feature split */}
       <section className="grid lg:grid-cols-2">
-        <div className="min-h-[24rem] bg-cream-deep" role="img" aria-label="Feature photo" />
+        <div className="relative min-h-[24rem]">
+          <Cover src={feature.image} alt={feature.title} sizes="(min-width: 1024px) 50vw, 100vw" />
+        </div>
         <div className="flex flex-col items-start justify-center gap-4 bg-olive p-8 text-cream lg:p-24">
           <Logo color="cream" height={26} />
-          <p className="font-script text-3xl">Jewelry created with love</p>
-          <h2 className="font-display text-4xl uppercase lg:text-5xl">Soleil</h2>
-          <p className="max-w-sm">Warm gold, soft curves and pieces light enough to forget you are wearing them.</p>
-          <Link href="/shop" className="btn-outline-cream mt-2">
-            Explore
+          <p className="font-script text-3xl">{feature.script}</p>
+          <h2 className="font-display text-4xl uppercase lg:text-5xl">{feature.title}</h2>
+          <p className="max-w-sm">{feature.text}</p>
+          <Link href={feature.buttonHref} className="btn-outline-cream mt-2">
+            {feature.buttonLabel}
           </Link>
         </div>
       </section>
@@ -83,8 +89,8 @@ export default function Home() {
       <section className="section container-page">
         <Reveal>
           <h2 className="mb-8 text-center font-display text-3xl">
-            <a href={siteConfig.instagram.url} target="_blank" rel="noopener noreferrer" className="hover:text-olive">
-              {siteConfig.instagram.handle}
+            <a href={instagram.url} target="_blank" rel="noopener noreferrer" className="hover:text-olive">
+              {instagram.handle}
             </a>
           </h2>
         </Reveal>
@@ -92,7 +98,7 @@ export default function Home() {
           {Array.from({ length: 6 }, (_, i) => (
             <a
               key={i}
-              href={siteConfig.instagram.url}
+              href={instagram.url}
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`Instagram photo ${i + 1}`}
