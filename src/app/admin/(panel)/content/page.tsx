@@ -4,8 +4,9 @@ import { contentDefaults, type LookbookPhoto } from "@/lib/data/site";
 import { PAGE_SLUGS } from "../_lib";
 import { Card, Check, Field, Notice, Save, Small, TextArea } from "../_components/ui";
 import { ImageUploader } from "../_components/ImageUploader";
+import { FocusPicker } from "../_components/FocusPicker";
 import {
-  addLookbookPhotos, clearContentImage, deleteLookbookPhoto, moveLookbookPhoto,
+  addLookbookPhotos, clearCatalogCover, saveCatalogFocus, setCatalogCover, clearContentImage, deleteLookbookPhoto, moveLookbookPhoto,
   saveContent, saveLookbookPhoto, savePage, setContentImage,
 } from "./actions";
 
@@ -31,7 +32,10 @@ function Image({ contentKey, field, url, label }: { contentKey: string; field: s
 
 export default async function ContentPage({ searchParams }: { searchParams: { error?: string; saved?: string } }) {
   const db = await adminDb();
-  const { data } = await db.from("site_content").select("key, value");
+  const [{ data }, { data: collections }] = await Promise.all([
+    db.from("site_content").select("key, value"),
+    db.from("collections").select("id, name").order("sort_order"),
+  ]);
   const rows = new Map((data ?? []).map((r) => [r.key as string, r.value as Block]));
   const get = (key: keyof typeof contentDefaults): Block => ({ ...(contentDefaults[key] as unknown as Block), ...(rows.get(key) ?? {}) });
 
@@ -41,6 +45,7 @@ export default async function ContentPage({ searchParams }: { searchParams: { er
   const insta = get("instagram");
   const announcement = get("announcement");
   const comingSoon = { ...contentDefaults.coming_soon, ...((rows.get("coming_soon") as unknown as Partial<typeof contentDefaults.coming_soon>) ?? {}) };
+  const coverMap = (rows.get("catalog_covers") ?? {}) as unknown as Record<string, { url: string; position?: string }>;
   const lookbook = ((rows.get("lookbook") as unknown as { photos?: LookbookPhoto[] })?.photos ?? []);
 
   return (
@@ -106,6 +111,40 @@ export default async function ContentPage({ searchParams }: { searchParams: { er
           <Field label="Profile link" name="url" defaultValue={insta.url} hint="Must start with https://" />
           <div><Save /></div>
         </form>
+      </Card>
+
+      <Card
+        title="Home catalog covers"
+        hint="The photos in the Catalog section of the home page, one per collection. They are tall portrait shapes, so use portrait photos (not the wide collection banners). Click a photo to choose the part the shape keeps in view. Only the first five collections appear on the home page."
+      >
+        <ul className="space-y-8">
+          {(collections ?? []).map((c, i) => {
+            const cover = coverMap[c.id];
+            const shape = ["Rectangle", "Arch", "Arch", "Quarter arch", "Rectangle"][i];
+            return (
+              <li key={c.id} className="border-b border-line pb-8">
+                <p className="font-display text-xl">
+                  {c.name} <span className="label ml-2 opacity-70">{shape ? `Tile ${i + 1}: ${shape}` : "Not shown on the home page"}</span>
+                </p>
+                {cover ? (
+                  <>
+                    <form action={saveCatalogFocus.bind(null, c.id)} className="mt-3 space-y-3">
+                      <FocusPicker src={cover.url} initial={cover.position ?? "center"} />
+                      <Small>Save focus point</Small>
+                    </form>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <ImageUploader folder="catalog" onUploaded={setCatalogCover.bind(null, c.id)} label="Replace photo" />
+                      <form action={clearCatalogCover.bind(null, c.id)}><Small danger>Remove</Small></form>
+                    </div>
+                  </>
+                ) : (
+                  <div className="mt-3"><ImageUploader folder="catalog" onUploaded={setCatalogCover.bind(null, c.id)} label="Upload cover photo" /></div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+        {(collections ?? []).length === 0 && <p className="text-sm">Create collections first, under Collections.</p>}
       </Card>
 
       <Card title="Lookbook photos" hint="Each photo needs alt text and can link to a product by its slug.">

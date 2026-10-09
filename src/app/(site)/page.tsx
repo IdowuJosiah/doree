@@ -15,7 +15,7 @@ const tileShapes: Shape[] = ["rect", "arch", "arch", "quarter", "rect"];
 
 export default async function Home() {
   const [content, collections, bestSellers] = await Promise.all([getSiteContent(), listCollections(), listBestSellers(4)]);
-  const { home_hero: hero, brand_statement: statement, feature_panel: feature, coming_soon: comingSoon } = content;
+  const { home_hero: hero, brand_statement: statement, feature_panel: feature, coming_soon: comingSoon, catalog_covers: covers } = content;
   const tiles = collections.slice(0, tileShapes.length);
 
   return (
@@ -56,7 +56,7 @@ export default async function Home() {
           {tiles.map((c, i) => (
             <Reveal key={c.id}>
               <Link href={`/shop/${c.slug}`} className="zoom block">
-                <Shaped image={{ src: c.bannerUrl ?? undefined, alt: c.name }} shape={tileShapes[i]} />
+                <Shaped image={{ src: covers[c.id]?.url, alt: c.name, objectPosition: covers[c.id]?.position }} shape={tileShapes[i]} />
                 <span className="label mt-3 block">{c.name}</span>
               </Link>
             </Reveal>

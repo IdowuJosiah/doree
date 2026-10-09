@@ -32,7 +32,7 @@ They sign in at `/admin/login`, the admin's own sign-in page (customers use `/lo
 | Stock levels across all products, low and out-of-stock alerts | `/admin/inventory` |
 | Orders and their status | Database, `/admin/orders` |
 | Shipping fixed-fee states and amounts | Database, `/admin/shipping` (nothing is hard-coded) |
-| Hero, statement, feature panel, coming-soon collection, announcement, Instagram link, lookbook, guides and policies | Database (`site_content`), `/admin/content` |
+| Hero, statement, home catalog cover photos, feature panel, coming-soon collection, announcement, Instagram link, lookbook, guides and policies | Database (`site_content`), `/admin/content` |
 | Home page best sellers | Tick "Best seller" on up to four products; if none are ticked, the top sellers by paid orders are shown |
 | Email sign-ups from the home page | Database (`subscribers`), `/admin/subscribers` |
 | Contact form messages | Database (`contact_messages`); readable in the Supabase table editor for now |

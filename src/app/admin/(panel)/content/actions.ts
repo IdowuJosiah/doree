@@ -115,6 +115,49 @@ export async function deleteLookbookPhoto(index: number) {
 
 // Guides and policies ---------------------------------------------------------
 
+// Home catalog covers ----------------------------------------------------------
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+type Covers = Record<string, { url: string; position?: string }>;
+
+async function covers(db: Db): Promise<Covers> {
+  const { data } = await db.from("site_content").select("value").eq("key", "catalog_covers").maybeSingle();
+  return (data?.value ?? {}) as Covers;
+}
+
+export async function setCatalogCover(collectionId: string, urls: string[]) {
+  const db = await adminDb();
+  if (!UUID.test(collectionId)) throw new Error("Unknown collection.");
+  const all = await covers(db);
+  const old = all[collectionId]?.url;
+  all[collectionId] = { url: urls[0], position: "center" };
+  const { error } = await db.from("site_content").upsert({ key: "catalog_covers", value: all });
+  if (error) throw new Error(error.message);
+  const file = old && storagePath(old);
+  if (file) await db.storage.from("media").remove([file]);
+  refreshPublic();
+}
+
+export async function saveCatalogFocus(collectionId: string, fd: FormData) {
+  const db = await adminDb();
+  const all = await covers(db);
+  if (!all[collectionId]) fail(PATH, "Upload a cover photo first.");
+  all[collectionId] = { ...all[collectionId], position: str(fd, "object_position") || "center" };
+  await write(db, "catalog_covers", all);
+  saved(PATH);
+}
+
+export async function clearCatalogCover(collectionId: string) {
+  const db = await adminDb();
+  const all = await covers(db);
+  const old = all[collectionId]?.url;
+  delete all[collectionId];
+  await write(db, "catalog_covers", all);
+  const file = old && storagePath(old);
+  if (file) await db.storage.from("media").remove([file]);
+  saved(PATH);
+}
+
 export async function savePage(slug: string, fd: FormData) {
   const db = await adminDb();
   if (!PAGE_SLUGS.some((p) => p.slug === slug)) fail(PATH, "Unknown page.");

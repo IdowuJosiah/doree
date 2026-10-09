@@ -26,6 +26,7 @@ export type ComingSoonContent = {
   launch: string;
   image: string;
 };
+export type CatalogCover = { url: string; position?: string };
 export type LookbookPhoto = { url: string; alt: string; productSlug?: string };
 
 export type SiteContent = {
@@ -36,6 +37,8 @@ export type SiteContent = {
   announcement: { text: string };
   coming_soon: ComingSoonContent;
   lookbook: { photos: LookbookPhoto[] };
+  /** Portrait cover photo for each collection tile in the home catalog, by collection id. */
+  catalog_covers: Record<string, CatalogCover>;
 };
 
 export const contentDefaults: SiteContent = {
@@ -69,6 +72,7 @@ export const contentDefaults: SiteContent = {
     image: "",
   },
   lookbook: { photos: [] },
+  catalog_covers: {},
 };
 
 // Rows in site_content override the defaults key by key.
