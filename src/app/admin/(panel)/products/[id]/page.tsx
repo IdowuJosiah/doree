@@ -35,7 +35,7 @@ export default async function EditProductPage({
       <h1 className="mb-6 mt-2 font-display text-4xl uppercase">{p.name}</h1>
       <Notice searchParams={searchParams} />
 
-      <div className={`mb-10 flex flex-wrap items-center justify-between gap-4 border p-5 ${p.published ? "border-olive" : "border-line bg-cream-deep"}`}>
+      <div className={`mb-10 flex flex-wrap items-center justify-between gap-4 border p-5 ${p.published ? "border-gold" : "border-line bg-cream-deep"}`}>
         <div>
           <p className="label">{p.published ? "Live on the shop" : p.archived ? "Archived" : "Draft"}</p>
           <p className="text-sm">
@@ -46,8 +46,8 @@ export default async function EditProductPage({
             )}
           </p>
           {!p.published && (variants?.length ?? 0) === 0 && <p className="mt-1 text-sm text-red-800">Add at least one size or option below before publishing.</p>}
-          {!p.published && (variants?.length ?? 0) > 0 && (variants ?? []).every((v) => v.stock <= 0) && <p className="mt-1 text-sm text-olive">Stock is 0, so it will show as sold out until you add stock.</p>}
-          {!p.published && (images?.length ?? 0) === 0 && <p className="mt-1 text-sm text-olive">No photos yet. It will show a plain placeholder.</p>}
+          {!p.published && (variants?.length ?? 0) > 0 && (variants ?? []).every((v) => v.stock <= 0) && <p className="mt-1 text-sm text-gold-text">Stock is 0, so it will show as sold out until you add stock.</p>}
+          {!p.published && (images?.length ?? 0) === 0 && <p className="mt-1 text-sm text-gold-text">No photos yet. It will show a plain placeholder.</p>}
         </div>
         <form action={setPublished.bind(null, p.id, !p.published, `/admin/products/${p.id}`)}>
           <button type="submit" className={p.published ? "btn-outline" : "btn-primary"}>{p.published ? "Unpublish" : "Publish"}</button>
@@ -66,7 +66,7 @@ export default async function EditProductPage({
             <legend className="label mb-1">Collections</legend>
             {(collections ?? []).map((c) => (
               <label key={c.id} className="flex min-h-[44px] items-center gap-3">
-                <input type="checkbox" name="collections" value={c.id} defaultChecked={inCollections.has(c.id)} className="h-4 w-4 accent-[var(--olive)]" />
+                <input type="checkbox" name="collections" value={c.id} defaultChecked={inCollections.has(c.id)} className="h-4 w-4 accent-[var(--gold-text)]" />
                 {c.name}
               </label>
             ))}

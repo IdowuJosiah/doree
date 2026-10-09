@@ -30,7 +30,7 @@ export default async function ShippingPage({ searchParams }: { searchParams: { e
             {US_STATES.map((st) => (
               <li key={st.code}>
                 <label className="flex min-h-[44px] items-center gap-3">
-                  <input type="checkbox" name="states" value={st.code} defaultChecked={selected.has(st.code)} className="h-4 w-4 accent-[var(--olive)]" />
+                  <input type="checkbox" name="states" value={st.code} defaultChecked={selected.has(st.code)} className="h-4 w-4 accent-[var(--gold-text)]" />
                   {st.name}
                 </label>
               </li>

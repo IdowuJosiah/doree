@@ -40,7 +40,7 @@ export function AddToBag({ product }: { product: Product }) {
                     onChange={() => setVariantId(v.id)}
                     className="peer sr-only"
                   />
-                  <span className={`flex h-11 min-w-[44px] items-center justify-center border px-4 text-sm peer-checked:border-ink peer-checked:bg-ink peer-checked:text-cream peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-olive ${out ? "border-line line-through opacity-40" : "border-line hover:border-ink"}`}>
+                  <span className={`flex h-11 min-w-[44px] items-center justify-center border px-4 text-sm peer-checked:border-ink peer-checked:bg-ink peer-checked:text-cream peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-gold-heading ${out ? "border-line line-through opacity-40" : "border-gold hover:border-ink"}`}>
                     {v.label}
                   </span>
                   {out && <span className="sr-only">(sold out)</span>}

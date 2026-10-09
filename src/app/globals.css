@@ -3,12 +3,19 @@
 @tailwind utilities;
 
 :root {
-  --olive: #7d6012;
+  /* Primary gold: buttons, panels, lines and other fills. Too light for text. */
   --gold: #c9a84c;
-  --cream: #fff8e8;
-  --ink: #1e1a12;
-  --cream-deep: #f1e7cd;
-  --line: #e3d8bd;
+  /* The same gold, darkened to stay readable as text on the light backgrounds:
+     headings (3:1 or more) and small text and links (4.5:1 or more). */
+  --gold-heading: #997d2e;
+  --gold-text: #766023;
+  /* Page background (light cream), accent cream and parchment. */
+  --cream: #fdfaf4;
+  --cream-deep: #f5edd9;
+  --parchment: #ede0c4;
+  --line: #ede0c4;
+  /* Espresso: body text. */
+  --ink: #1a1208;
   --black: #000000;
 }
 
@@ -17,16 +24,25 @@
     background: var(--cream);
   }
   body {
-    @apply bg-cream font-sans text-base text-ink antialiased;
+    @apply bg-cream font-sans text-ink antialiased;
+    /* Cormorant Garamond runs small, so body text is set a little larger. */
+    font-size: 1.125rem;
+    font-weight: 500;
     line-height: 1.6;
+    font-variant-numeric: lining-nums;
   }
   h1,
   h2,
   h3 {
-    @apply font-display font-normal;
+    @apply font-display font-bold;
+  }
+  /* Headings are gold. Pass text-ink (or another colour) to override. */
+  h1,
+  h2 {
+    color: var(--gold-heading);
   }
   :focus-visible {
-    outline: 2px solid var(--olive);
+    outline: 2px solid var(--gold-heading);
     outline-offset: 2px;
   }
 }
@@ -39,7 +55,7 @@
     @apply py-16 lg:py-24;
   }
   .label {
-    @apply font-sans text-sm uppercase tracking-label;
+    @apply font-sans text-[0.95rem] font-semibold uppercase tracking-label;
   }
   .display-xl {
     @apply font-display uppercase;
@@ -47,30 +63,30 @@
     line-height: 1;
   }
   .script-line {
-    @apply font-script text-3xl text-olive;
+    @apply font-script text-3xl text-gold-heading;
   }
   .btn {
     @apply label inline-flex min-h-[44px] items-center justify-center px-8 py-3.5 transition-colors duration-300;
     border-radius: 0;
   }
   .btn-primary {
-    @apply btn bg-olive text-cream hover:brightness-[0.92] disabled:cursor-not-allowed disabled:opacity-50;
+    @apply btn bg-gold text-ink hover:brightness-[0.92] disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn-outline {
     @apply btn border border-ink bg-transparent text-ink hover:bg-ink hover:text-cream;
   }
   .btn-outline-cream {
-    @apply btn border border-cream bg-transparent text-cream hover:bg-cream hover:text-olive;
+    @apply btn border border-cream bg-transparent text-cream hover:bg-cream hover:text-ink;
   }
   .text-link {
-    @apply text-olive hover:underline;
+    @apply text-gold-text underline-offset-4 hover:underline;
   }
   .field {
-    @apply h-12 w-full border border-line bg-transparent px-4 text-ink;
+    @apply h-12 w-full border border-gold bg-transparent px-4 text-ink;
     border-radius: 0;
   }
   .field:focus {
-    outline: 2px solid var(--olive);
+    outline: 2px solid var(--gold-heading);
     outline-offset: 0;
   }
 }

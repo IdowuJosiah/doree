@@ -16,7 +16,7 @@ export function SignupForm({ source, buttonLabel }: { source: "coming_soon" | "n
   const [state, action] = useFormState<SignupState, FormData>(subscribe, { status: "idle", message: "" });
 
   if (state.status === "ok") {
-    return <p role="status" className="font-display text-xl text-olive">{state.message}</p>;
+    return <p role="status" className="font-display text-xl text-gold-text">{state.message}</p>;
   }
 
   return (

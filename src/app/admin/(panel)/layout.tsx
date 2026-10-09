@@ -21,7 +21,7 @@ export default async function AdminPanelLayout({ children }: { children: React.R
         <Link href="/admin" aria-label="Admin home"><Logo color="ink" height={26} /></Link>
         <nav aria-label="Admin" className="label mt-4 flex flex-wrap gap-x-5 gap-y-1 lg:mt-8 lg:flex-col lg:gap-y-1">
           {nav.map((n) => (
-            <Link key={n.href} href={n.href} className="flex min-h-[44px] items-center hover:text-olive">{n.label}</Link>
+            <Link key={n.href} href={n.href} className="flex min-h-[44px] items-center hover:text-gold-text">{n.label}</Link>
           ))}
         </nav>
         <form action={adminSignOut} className="mt-4 lg:mt-10">

@@ -14,7 +14,7 @@ export function WishlistButton({ productId, name, className = "" }: { productId:
         e.preventDefault();
         toggle(productId, name);
       }}
-      className={`flex h-11 w-11 items-center justify-center hover:text-olive ${saved ? "text-olive" : "text-ink"} ${className}`}
+      className={`flex h-11 w-11 items-center justify-center hover:text-gold-text ${saved ? "text-gold-text" : "text-ink"} ${className}`}
     >
       <svg width="22" height="22" viewBox="0 0 24 24" fill={saved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
         <path d="M12 21s-8-5-8-11a4.5 4.5 0 018-2.8A4.5 4.5 0 0120 10c0 6-8 11-8 11z" />

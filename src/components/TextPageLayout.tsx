@@ -7,7 +7,7 @@ export function TextPageLayout({ page, children, eyebrow }: { page: TextPage; ch
   const headings = headingsOf(page.body);
   return (
     <article className="section container-page">
-      {eyebrow && <p className="label mb-3 text-olive">{eyebrow}</p>}
+      {eyebrow && <p className="label mb-3 text-gold-text">{eyebrow}</p>}
       <h1 className="display-xl">{page.title}</h1>
       {page.intro && <p className="mt-6 max-w-2xl text-lg">{page.intro}</p>}
       <div className={`mt-12 grid gap-12 ${headings.length > 1 ? "lg:grid-cols-[200px_1fr]" : ""}`}>
@@ -15,7 +15,7 @@ export function TextPageLayout({ page, children, eyebrow }: { page: TextPage; ch
           <nav aria-label="On this page" className="hidden lg:block">
             <ul className="sticky top-28 space-y-2 text-sm">
               <li className="label mb-3">Contents</li>
-              {headings.map((h) => <li key={h.id}><a href={`#${h.id}`} className="hover:text-olive">{h.text}</a></li>)}
+              {headings.map((h) => <li key={h.id}><a href={`#${h.id}`} className="hover:text-gold-text">{h.text}</a></li>)}
             </ul>
           </nav>
         )}

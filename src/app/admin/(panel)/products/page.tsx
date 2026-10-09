@@ -62,7 +62,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: { q
                   <td>{p.product_variants.length ? stock : "No variants"}</td>
                   <td>
                     {p.archived ? "Archived" : p.sold_out ? "Sold out" : p.published ? "Published" : "Draft"}
-                    {p.best_seller && !p.archived && <span className="block text-xs text-olive">Best seller</span>}
+                    {p.best_seller && !p.archived && <span className="block text-xs text-gold-text">Best seller</span>}
                   </td>
                   <td className="flex justify-end gap-2 py-2">
                     {!p.archived && (

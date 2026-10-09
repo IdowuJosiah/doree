@@ -101,12 +101,12 @@ export default async function Home() {
         <div className="relative min-h-[24rem]">
           <Cover src={feature.image} alt={feature.title} sizes="(min-width: 1024px) 50vw, 100vw" />
         </div>
-        <div className="flex flex-col items-start justify-center gap-4 bg-olive p-8 text-cream lg:p-24">
-          <Logo color="cream" height={26} />
+        <div className="flex flex-col items-start justify-center gap-4 bg-gold p-8 text-ink lg:p-24">
+          <Logo color="ink" height={26} />
           <p className="font-script text-3xl">{feature.script}</p>
-          <h2 className="font-display text-4xl uppercase lg:text-5xl">{feature.title}</h2>
+          <h2 className="font-display text-4xl uppercase text-ink lg:text-5xl">{feature.title}</h2>
           <p className="max-w-sm">{feature.text}</p>
-          <Link href={feature.buttonHref} className="btn-outline-cream mt-2">
+          <Link href={feature.buttonHref} className="btn-outline mt-2">
             {feature.buttonLabel}
           </Link>
         </div>
@@ -122,7 +122,7 @@ export default async function Home() {
             <Reveal>
               <p className="script-line">{comingSoon.script}</p>
               <h2 className="mt-2 font-display text-4xl uppercase lg:text-6xl">{comingSoon.title}</h2>
-              {comingSoon.launch && <p className="label mt-4 text-olive">{comingSoon.launch}</p>}
+              {comingSoon.launch && <p className="label mt-4 text-gold-text">{comingSoon.launch}</p>}
               <p className="mb-8 mt-4 max-w-md">{comingSoon.text}</p>
               <SignupForm source="coming_soon" buttonLabel="Notify me" />
             </Reveal>

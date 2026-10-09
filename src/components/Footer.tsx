@@ -18,11 +18,11 @@ const help = [
 function Column({ title, links }: { title: string; links: { href: string; label: string }[] }) {
   return (
     <div>
-      <h2 className="label mb-4 font-sans">{title}</h2>
+      <h2 className="label mb-4 font-sans text-gold-text">{title}</h2>
       <ul className="space-y-2">
         {links.map((l) => (
           <li key={l.href}>
-            <Link href={l.href} className="hover:text-olive">
+            <Link href={l.href} className="hover:text-gold-text">
               {l.label}
             </Link>
           </li>
@@ -43,8 +43,8 @@ export function Footer({ instagramUrl }: { instagramUrl: string }) {
         <Column title="Shop" links={shop} />
         <Column title="Help" links={help} />
         <div>
-          <h2 className="label mb-4 font-sans">Follow</h2>
-          <a href={instagramUrl} className="hover:text-olive" target="_blank" rel="noopener noreferrer">
+          <h2 className="label mb-4 font-sans text-gold-text">Follow</h2>
+          <a href={instagramUrl} className="hover:text-gold-text" target="_blank" rel="noopener noreferrer">
             Instagram
           </a>
         </div>
@@ -52,8 +52,8 @@ export function Footer({ instagramUrl }: { instagramUrl: string }) {
       <div className="container-page flex flex-wrap justify-between gap-2 border-t border-line py-6 text-sm">
         <p>&copy; {new Date().getFullYear()} {siteConfig.name}</p>
         <p className="flex gap-4">
-          <Link href="/policies/privacy" className="hover:text-olive">Privacy</Link>
-          <Link href="/policies/terms" className="hover:text-olive">Terms</Link>
+          <Link href="/policies/privacy" className="hover:text-gold-text">Privacy</Link>
+          <Link href="/policies/terms" className="hover:text-gold-text">Terms</Link>
         </p>
       </div>
     </footer>

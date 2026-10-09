@@ -5,13 +5,13 @@ export function Notice({ searchParams }: { searchParams: { error?: string; saved
     return <p role="alert" className="mb-6 border border-red-800 px-4 py-3 text-sm text-red-800">{searchParams.error}</p>;
   }
   if (searchParams.published) {
-    return <p role="status" className="mb-6 border border-olive bg-olive px-4 py-3 text-sm text-cream">Published. It is now live on the shop (allow up to a minute).</p>;
+    return <p role="status" className="mb-6 border border-gold bg-gold px-4 py-3 text-sm text-ink">Published. It is now live on the shop (allow up to a minute).</p>;
   }
   if (searchParams.unpublished) {
-    return <p role="status" className="mb-6 border border-olive px-4 py-3 text-sm text-olive">Unpublished. It is no longer visible on the shop.</p>;
+    return <p role="status" className="mb-6 border border-gold px-4 py-3 text-sm text-gold-text">Unpublished. It is no longer visible on the shop.</p>;
   }
   if (searchParams.saved) {
-    return <p role="status" className="mb-6 border border-olive px-4 py-3 text-sm text-olive">Saved.</p>;
+    return <p role="status" className="mb-6 border border-gold px-4 py-3 text-sm text-gold-text">Saved.</p>;
   }
   return null;
 }
@@ -64,7 +64,7 @@ export function TextArea({ label, name, defaultValue, rows = 4 }: { label: strin
 export function Check({ label, name, defaultChecked }: { label: string; name: string; defaultChecked?: boolean }) {
   return (
     <label className="flex min-h-[44px] items-center gap-3">
-      <input type="checkbox" name={name} defaultChecked={defaultChecked} className="h-4 w-4 accent-[var(--olive)]" />
+      <input type="checkbox" name={name} defaultChecked={defaultChecked} className="h-4 w-4 accent-[var(--gold-text)]" />
       {label}
     </label>
   );

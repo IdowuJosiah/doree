@@ -42,7 +42,7 @@ export default async function OrdersPage() {
               </div>
               <div className="sm:text-right">
                 <p>{formatPrice(o.total)}</p>
-                <p className="label mt-1 text-olive">{labels[o.status] ?? o.status}</p>
+                <p className="label mt-1 text-gold-text">{labels[o.status] ?? o.status}</p>
               </div>
             </li>
           ))}

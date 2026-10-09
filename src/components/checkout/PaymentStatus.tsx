@@ -22,5 +22,5 @@ export function PaymentStatus({ orderId, initialStatus }: { orderId: string; ini
 
   const text =
     status === "pending" ? "We are confirming your payment…" : status === "cancelled" ? "This order was cancelled." : "Your payment is confirmed.";
-  return <p role="status" className="mt-4 text-olive">{text}</p>;
+  return <p role="status" className="mt-4 text-gold-text">{text}</p>;
 }

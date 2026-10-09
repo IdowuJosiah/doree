@@ -13,6 +13,15 @@ import { SquareCard } from "./SquareCard";
 type Order = { orderId: string; number: number; subtotal: number; shippingFee: number; total: number };
 type SquareConfig = { appId: string; locationId: string; sandbox: boolean };
 
+/** Checkout step number, highlighted in gold. */
+function Step({ n }: { n: number }) {
+  return (
+    <span aria-hidden="true" className="mr-3 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold font-display text-lg font-bold text-ink">
+      {n}
+    </span>
+  );
+}
+
 function Input({ label, name, type = "text", autoComplete, required = true }: { label: string; name: string; type?: string; autoComplete?: string; required?: boolean }) {
   return (
     <div>
@@ -116,11 +125,11 @@ export function CheckoutForm({ shipping, square }: { shipping: ShippingSettings;
         >
           <fieldset disabled={Boolean(order) || busy} className="space-y-8">
             <div className="space-y-4">
-              <legend className="font-display text-2xl">Contact</legend>
+              <legend className="flex items-center font-display text-2xl font-bold text-gold-heading"><Step n={1} />Contact</legend>
               <Input label="Email" name="email" type="email" autoComplete="email" />
             </div>
             <div className="space-y-4">
-              <h2 className="font-display text-2xl">Shipping address</h2>
+              <h2 className="flex items-center font-display text-2xl"><Step n={2} />Shipping address</h2>
               <Input label="Full name" name="name" autoComplete="name" />
               <Input label="Address" name="line1" autoComplete="address-line1" />
               <Input label="Apartment, suite" name="line2" autoComplete="address-line2" required={false} />
@@ -143,7 +152,7 @@ export function CheckoutForm({ shipping, square }: { shipping: ShippingSettings;
         {order && (
           <div className="mt-10 space-y-4">
             <div className="flex items-baseline justify-between">
-              <h2 className="font-display text-2xl">Payment</h2>
+              <h2 className="flex items-center font-display text-2xl"><Step n={3} />Payment</h2>
               <button type="button" className="text-link text-sm" onClick={() => { setOrder(null); setTokenize(null); }}>Edit details</button>
             </div>
             {paymentsConfigured ? (

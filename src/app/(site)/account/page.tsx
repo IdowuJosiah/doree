@@ -42,7 +42,7 @@ export default async function AccountPage({ searchParams }: { searchParams: { sa
       <div className="mt-16 max-w-xl">
         <h2 className="font-display text-3xl">Saved details</h2>
         <p className="mt-1 text-sm opacity-70">{user.email}</p>
-        {searchParams.saved && <p role="status" className="mt-4 text-sm text-olive">Saved.</p>}
+        {searchParams.saved && <p role="status" className="mt-4 text-sm text-gold-text">Saved.</p>}
         {searchParams.error && <p role="alert" className="mt-4 text-sm text-red-800">Please check your details and try again.</p>}
         <form action={saveDetails} className="mt-6 space-y-4">
           {field("Name", "name", customer?.name, "name")}

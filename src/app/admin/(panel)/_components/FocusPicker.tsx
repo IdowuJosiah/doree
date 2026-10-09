@@ -40,7 +40,7 @@ export function FocusPicker({ src, initial, name = "object_position" }: { src: s
           <img src={src} alt="" className="block max-h-48 w-auto" onError={() => setBroken(true)} />
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-cream bg-olive"
+            className="pointer-events-none absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-cream bg-gold-text"
             style={{ left: `${x}%`, top: `${y}%` }}
           />
         </button>

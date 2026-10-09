@@ -30,7 +30,7 @@ export function Header({ announcement = "" }: { announcement?: string }) {
   return (
     <>
       {announcement && (
-        <p className="bg-olive px-4 py-2 text-center text-sm text-cream">{announcement}</p>
+        <p className="bg-gold px-4 py-2 text-center text-base font-semibold text-ink">{announcement}</p>
       )}
       <header
         className={`sticky top-0 z-40 border-b border-line bg-cream transition-[height] duration-300 ${
@@ -52,7 +52,7 @@ export function Header({ announcement = "" }: { announcement?: string }) {
 
           <nav aria-label="Primary" className="hidden items-center gap-8 lg:flex">
             {navLinks.map((l) => (
-              <Link key={l.href} href={l.href} className="label hover:text-olive">
+              <Link key={l.href} href={l.href} className="label hover:text-gold-text">
                 {l.label}
               </Link>
             ))}
@@ -63,12 +63,12 @@ export function Header({ announcement = "" }: { announcement?: string }) {
           </Link>
 
           <div className="flex items-center gap-1 lg:gap-4">
-            <Link href="/account/wishlist" aria-label="Wishlist" className="hidden h-11 w-11 items-center justify-center hover:text-olive lg:flex">
+            <Link href="/account/wishlist" aria-label="Wishlist" className="hidden h-11 w-11 items-center justify-center hover:text-gold-text lg:flex">
               <svg {...icon} aria-hidden="true">
                 <path d="M12 21s-8-5-8-11a4.5 4.5 0 018-2.8A4.5 4.5 0 0120 10c0 6-8 11-8 11z" />
               </svg>
             </Link>
-            <Link href="/account" aria-label="Account" className="hidden h-11 w-11 items-center justify-center hover:text-olive lg:flex">
+            <Link href="/account" aria-label="Account" className="hidden h-11 w-11 items-center justify-center hover:text-gold-text lg:flex">
               <svg {...icon} aria-hidden="true">
                 <circle cx="12" cy="8" r="4" />
                 <path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
@@ -78,7 +78,7 @@ export function Header({ announcement = "" }: { announcement?: string }) {
               type="button"
               aria-label={`Bag, ${cart.count} ${cart.count === 1 ? "item" : "items"}`}
               onClick={cart.open}
-              className="relative -mr-3 flex h-11 w-11 items-center justify-center hover:text-olive lg:mr-0"
+              className="relative -mr-3 flex h-11 w-11 items-center justify-center hover:text-gold-text lg:mr-0"
             >
               <svg {...icon} aria-hidden="true">
                 <path d="M5 8h14l-1 12H6L5 8zM9 8V6a3 3 0 016 0v2" />
@@ -102,7 +102,7 @@ export function Header({ announcement = "" }: { announcement?: string }) {
           </div>
           <nav className="container-page flex flex-1 flex-col justify-center gap-6" aria-label="Mobile">
             {[...navLinks, { href: "/account", label: "Account" }, { href: "/account/wishlist", label: "Wishlist" }].map((l) => (
-              <Link key={l.href} href={l.href} onClick={() => setOpen(false)} className="font-display text-4xl hover:text-olive">
+              <Link key={l.href} href={l.href} onClick={() => setOpen(false)} className="font-display text-4xl hover:text-gold-text">
                 {l.label}
               </Link>
             ))}

@@ -54,7 +54,7 @@ export function CartDrawer() {
                     )}
                   </div>
                   <div className="flex flex-1 flex-col">
-                    <Link href={`/product/${i.slug}`} onClick={close} className="hover:text-olive">{i.name}</Link>
+                    <Link href={`/product/${i.slug}`} onClick={close} className="hover:text-gold-text">{i.name}</Link>
                     {i.variantLabel !== "One size" && <p className="text-sm opacity-70">{i.variantLabel}</p>}
                     <p className="text-sm">{formatPrice(i.price)}</p>
                     <div className="mt-auto flex items-center justify-between pt-2">

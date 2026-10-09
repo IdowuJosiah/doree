@@ -20,7 +20,7 @@ export default async function OrderConfirmation({ searchParams }: { searchParams
 
   return (
     <section className="section container-page max-w-2xl text-center">
-      <Logo color="olive" height={40} className="mx-auto" />
+      <Logo color="ink" height={40} className="mx-auto" />
       <p className="script-line mt-8">Thank you</p>
       {order ? (
         <>

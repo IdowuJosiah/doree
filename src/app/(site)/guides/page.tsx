@@ -20,7 +20,7 @@ export default function GuidesPage() {
           <li key={g.slug}>
             <Link href={`/guides/${g.slug}`} className="zoom group block">
               <Shaped image={{ alt: "" }} shape={g.shape} />
-              <h2 className="mt-4 font-display text-2xl group-hover:text-olive">{g.title}</h2>
+              <h2 className="mt-4 font-display text-2xl group-hover:text-gold-text">{g.title}</h2>
               <p className="text-sm">{g.text}</p>
             </Link>
           </li>

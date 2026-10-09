@@ -17,7 +17,7 @@ type Row = {
 };
 
 const levelLabel: Record<StockLevel, string> = { out: "Out of stock", low: "Low", ok: "In stock" };
-const levelClass: Record<StockLevel, string> = { out: "text-red-800", low: "text-olive font-medium", ok: "opacity-70" };
+const levelClass: Record<StockLevel, string> = { out: "text-red-800", low: "text-gold-text font-medium", ok: "opacity-70" };
 
 const filters = [
   { value: "", label: "All" },
@@ -70,7 +70,7 @@ export default async function InventoryPage({
         <li className="border border-line p-5"><p className="label">Units in stock</p><p className="font-display text-3xl">{units}</p></li>
         <li className="border border-line p-5"><p className="label">Stock value</p><p className="font-display text-3xl">{formatPrice(value)}</p><p className="text-xs opacity-70">at selling price</p></li>
         <li className="border border-line p-5">
-          <p className="label">Low stock</p><p className="font-display text-3xl text-olive">{lowCount}</p>
+          <p className="label">Low stock</p><p className="font-display text-3xl text-gold-text">{lowCount}</p>
           <Link href="/admin/inventory?show=low" className="text-link text-sm">Show</Link>
         </li>
         <li className="border border-line p-5">
