@@ -21,13 +21,16 @@ export default async function CollectionPage({ params }: Props) {
   const { collection, products } = found;
 
   return (
-    <section className="section container-page">
-      <div className="relative mb-10 h-48 lg:h-72">
-        <Cover src={collection.bannerUrl ?? undefined} alt={`${collection.name} banner`} />
+    <>
+      {/* Full-width banner, the same height as the home page hero. */}
+      <div className="relative min-h-[70vh] w-full">
+        <Cover src={collection.bannerUrl ?? undefined} alt={`${collection.name} banner`} priority sizes="100vw" />
       </div>
-      <h1 className="display-xl">{collection.name}</h1>
-      {collection.intro && <p className="mt-4 max-w-xl">{collection.intro}</p>}
-      <ProductGrid products={products} filters={<CategoryLinks collections={collections} current={collection.slug} />} />
-    </section>
+      <section className="section container-page">
+        <h1 className="display-xl">{collection.name}</h1>
+        {collection.intro && <p className="mt-4 max-w-xl">{collection.intro}</p>}
+        <ProductGrid products={products} filters={<CategoryLinks collections={collections} current={collection.slug} />} />
+      </section>
+    </>
   );
 }

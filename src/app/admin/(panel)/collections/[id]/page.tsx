@@ -46,7 +46,7 @@ export default async function EditCollectionPage({
         </form>
       </Card>
 
-      <Card title="Banner image">
+      <Card title="Banner image" hint="Shown full width at the top of the collection page, as tall as the home page hero. A wide landscape photo works best.">
         {c.banner_url && (
           <div className="mb-4 flex items-end gap-4">
             {/* eslint-disable-next-line @next/next/no-img-element */}
