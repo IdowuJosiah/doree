@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { siteConfig } from "@/lib/config";
+import { sendOrderEmails } from "@/lib/email/order-emails";
 import { createServiceClient } from "@/lib/supabase/service";
 import { handlePaymentEvent, verifySquareSignature, type SquarePaymentEvent } from "@/lib/square-webhook";
 
@@ -15,8 +16,9 @@ export async function POST(request: Request) {
   }
 
   const db = createServiceClient();
+  const event = JSON.parse(rawBody) as SquarePaymentEvent;
   try {
-    const result = await handlePaymentEvent(JSON.parse(rawBody) as SquarePaymentEvent, {
+    const result = await handlePaymentEvent(event, {
       currency: siteConfig.currency,
       async findOrder(orderId) {
         const { data, error } = await db.from("orders").select("id, status, total").eq("id", orderId).maybeSingle();
@@ -30,7 +32,12 @@ export async function POST(request: Request) {
       },
     });
     // Stock changed, so cached shop pages may need to show "Sold out".
-    if (result === "paid") revalidatePath("/", "layout");
+    if (result === "paid") {
+      revalidatePath("/", "layout");
+      // Only the delivery that marks the order paid sends emails, so Square's
+      // retries never send duplicates. Email problems are logged, not retried.
+      await sendOrderEmails(event.data!.object!.payment!.reference_id!);
+    }
     if (result === "amount_mismatch" || result === "unknown_order") console.error("square webhook", result);
     return NextResponse.json({ result });
   } catch (e) {

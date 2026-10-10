@@ -3,6 +3,8 @@
 import { z } from "zod";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createServiceClient } from "@/lib/supabase/service";
+import { notifyAddress, sendEmail } from "@/lib/email/send";
+import { contactAlert } from "@/lib/email/templates";
 
 export type ContactState = { status: "idle" | "ok" | "error"; message: string };
 
@@ -22,6 +24,8 @@ export async function sendMessage(_prev: ContactState, formData: FormData): Prom
     const { name, email, message } = parsed.data;
     const { error } = await createServiceClient().from("contact_messages").insert({ name, email, message });
     if (error) throw error;
+    // Let Dorée know straight away; replying to the alert answers the customer.
+    if (notifyAddress()) await sendEmail({ to: notifyAddress(), email: contactAlert({ name, email, message }), replyTo: email });
   } catch (e) {
     console.error("contact failed", e);
     return { status: "error", message: "Something went wrong. Please email us instead." };

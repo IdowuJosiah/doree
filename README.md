@@ -49,6 +49,7 @@ Pushing to the branch deploys automatically. Public pages refresh at most a minu
 - The checkout page loads the Square Web Payments card form (`NEXT_PUBLIC_SQUARE_APP_ID`, `NEXT_PUBLIC_SQUARE_LOCATION_ID`); card details go straight to Square.
 - `POST /api/checkout/pay` charges the order's stored total through Square using the card token from the Web Payments SDK.
 - `POST /api/webhooks/square` verifies Square's signature. On a completed payment whose amount matches the order, it calls the `mark_order_paid` database function, which marks the order Paid, saves the payment reference and reduces stock in one transaction. It is safe to deliver twice. Failed or abandoned payments leave the order pending and stock untouched.
+- When the webhook marks an order Paid, the customer gets a confirmation email and Dorée gets a new-order alert (Resend: `RESEND_API_KEY`, `EMAIL_FROM`, `ORDER_NOTIFY_EMAIL`, `NEXT_PUBLIC_SITE_URL`). Contact-form messages are emailed to Dorée too. If email is not configured or Resend fails, the order still goes through and the problem is logged.
 - Guest orders are linked to a customer when someone confirms an account with the same email.
 
 Subscribe the webhook to `payment.updated` in the Square dashboard and set `SQUARE_WEBHOOK_URL` to the exact URL you registered.
