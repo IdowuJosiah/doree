@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Pinyon_Script, Playfair_Display } from "next/font/google";
+import { Jost, Pinyon_Script, Playfair_Display } from "next/font/google";
 import { siteConfig } from "@/lib/config";
 import "./globals.css";
 
-// Headings: Playfair Display (bold, gold). Body: Cormorant Garamond (espresso).
+// Headings: Playfair Display (bold, gold). Body: Jost (espresso).
 const display = Playfair_Display({ subsets: ["latin"], weight: ["600", "700"], variable: "--font-display", display: "swap" });
-const body = Cormorant_Garamond({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-body", display: "swap" });
+const body = Jost({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-body", display: "swap" });
 const script = Pinyon_Script({ subsets: ["latin"], weight: "400", variable: "--font-script", display: "swap" });
 
 export const metadata: Metadata = {

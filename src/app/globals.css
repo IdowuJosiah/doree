@@ -24,10 +24,7 @@
     background: var(--cream);
   }
   body {
-    @apply bg-cream font-sans text-ink antialiased;
-    /* Cormorant Garamond runs small, so body text is set a little larger. */
-    font-size: 1.125rem;
-    font-weight: 500;
+    @apply bg-cream font-sans text-base text-ink antialiased;
     line-height: 1.6;
     font-variant-numeric: lining-nums;
   }
@@ -55,7 +52,7 @@
     @apply py-16 lg:py-24;
   }
   .label {
-    @apply font-sans text-[0.95rem] font-semibold uppercase tracking-label;
+    @apply font-sans text-sm uppercase tracking-label;
   }
   .display-xl {
     @apply font-display uppercase;

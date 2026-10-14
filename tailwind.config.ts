@@ -18,16 +18,8 @@ const config: Config = {
       },
       fontFamily: {
         display: ["var(--font-display)", "Georgia", "serif"],
-        sans: ["var(--font-body)", "Georgia", "serif"],
+        sans: ["var(--font-body)", "sans-serif"],
         script: ["var(--font-script)", "cursive"],
-      },
-      // Cormorant Garamond reads smaller than most fonts at the same size, so
-      // the small steps are set up a notch to stay comfortable to read.
-      fontSize: {
-        xs: ["0.875rem", { lineHeight: "1.4" }],
-        sm: ["1rem", { lineHeight: "1.5" }],
-        base: ["1.125rem", { lineHeight: "1.6" }],
-        lg: ["1.25rem", { lineHeight: "1.6" }],
       },
       maxWidth: { container: "1200px" },
       letterSpacing: { label: "0.08em" },
