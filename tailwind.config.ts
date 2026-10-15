@@ -18,7 +18,7 @@ const config: Config = {
       },
       fontFamily: {
         display: ["var(--font-display)", "Georgia", "serif"],
-        statement: ["var(--font-statement)", "Georgia", "serif"],
+        statement: ["var(--font-display)", "Georgia", "serif"],
         sans: ["var(--font-body)", "sans-serif"],
         script: ["var(--font-script)", "cursive"],
       },

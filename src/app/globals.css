@@ -31,7 +31,7 @@
   h1,
   h2,
   h3 {
-    @apply font-display font-bold;
+    @apply font-display font-normal;
   }
   /* Headings are gold. Pass text-ink (or another colour) to override. */
   h1,

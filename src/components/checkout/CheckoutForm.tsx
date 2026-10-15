@@ -125,7 +125,7 @@ export function CheckoutForm({ shipping, square }: { shipping: ShippingSettings;
         >
           <fieldset disabled={Boolean(order) || busy} className="space-y-8">
             <div className="space-y-4">
-              <legend className="flex items-center font-display text-2xl font-bold text-gold-heading"><Step n={1} />Contact</legend>
+              <legend className="flex items-center font-display text-2xl text-gold-heading"><Step n={1} />Contact</legend>
               <Input label="Email" name="email" type="email" autoComplete="email" />
             </div>
             <div className="space-y-4">
