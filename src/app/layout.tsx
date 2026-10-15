@@ -4,7 +4,7 @@ import { siteConfig } from "@/lib/config";
 import "./globals.css";
 
 // Headings and statements: Bodoni Moda (gold headings). Body: Jost (espresso).
-const display = Bodoni_Moda({ subsets: ["latin"], weight: ["400", "500", "700"], variable: "--font-display", display: "swap" });
+const display = Bodoni_Moda({ subsets: ["latin"], weight: ["400", "500", "700"], style: ["normal", "italic"], variable: "--font-display", display: "swap" });
 const body = Jost({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-body", display: "swap" });
 const script = Pinyon_Script({ subsets: ["latin"], weight: "400", variable: "--font-script", display: "swap" });
 

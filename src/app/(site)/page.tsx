@@ -40,7 +40,7 @@ export default async function Home() {
       {/* 2. Brand statement */}
       <section className="section container-page text-center">
         <Reveal>
-          <p className="mx-auto max-w-3xl font-statement text-3xl font-normal lg:text-4xl">{statement.text}</p>
+          <p className="mx-auto max-w-3xl font-statement text-4xl font-normal italic text-gold-heading lg:text-6xl">{statement.text}</p>
         </Reveal>
       </section>
 
