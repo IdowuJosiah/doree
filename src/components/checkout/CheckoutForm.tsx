@@ -45,7 +45,7 @@ export function CheckoutForm({ shipping, square }: { shipping: ShippingSettings;
   if (items.length === 0 && !order) {
     return (
       <div className="py-12 text-center">
-        <p className="font-display text-2xl">Your bag is empty.</p>
+        <p className="font-statement text-2xl font-normal">Your bag is empty.</p>
         <Link href="/shop" className="btn-outline mt-6">Shop now</Link>
       </div>
     );

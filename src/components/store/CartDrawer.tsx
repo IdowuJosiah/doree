@@ -40,7 +40,7 @@ export function CartDrawer() {
 
         {items.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-6 px-6 text-center">
-            <p className="font-display text-2xl">Your bag is empty.</p>
+            <p className="font-statement text-2xl font-normal">Your bag is empty.</p>
             <Link href="/shop" onClick={close} className="btn-outline">Shop now</Link>
           </div>
         ) : (

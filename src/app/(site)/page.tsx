@@ -63,7 +63,7 @@ export default async function Home() {
           ))}
           <Reveal className="flex items-center justify-center">
             <div className="text-center">
-              <p className="mb-6 max-w-[16rem] font-display text-2xl">Find the piece you will keep.</p>
+              <p className="mb-6 max-w-[16rem] font-statement text-2xl font-normal">Find the piece you will keep.</p>
               <Link href="/shop" className="btn-outline">
                 See all
               </Link>
@@ -129,7 +129,7 @@ export default async function Home() {
           </div>
         ) : (
           <div className="section container-page flex flex-col items-center gap-6 text-center">
-            <p className="font-display text-2xl">Be the first to hear about new collections.</p>
+            <p className="font-statement text-2xl font-normal">Be the first to hear about new collections.</p>
             <SignupForm source="newsletter" buttonLabel="Subscribe" />
           </div>
         )}
