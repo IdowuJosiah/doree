@@ -102,7 +102,7 @@ export function Header({ announcement = "" }: { announcement?: string }) {
           </div>
           <nav className="container-page flex flex-1 flex-col justify-center gap-6" aria-label="Mobile">
             {[...navLinks, { href: "/account", label: "Account" }, { href: "/account/wishlist", label: "Wishlist" }].map((l) => (
-              <Link key={l.href} href={l.href} onClick={() => setOpen(false)} className="font-display text-4xl hover:text-gold-text">
+              <Link key={l.href} href={l.href} onClick={() => setOpen(false)} className="font-statement text-4xl font-normal hover:text-gold-text">
                 {l.label}
               </Link>
             ))}
