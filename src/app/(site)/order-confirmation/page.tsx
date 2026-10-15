@@ -21,10 +21,10 @@ export default async function OrderConfirmation({ searchParams }: { searchParams
   return (
     <section className="section container-page max-w-2xl text-center">
       <Logo color="ink" height={40} className="mx-auto" />
-      <p className="script-line mt-8">Thank you</p>
       {order ? (
         <>
-          <h1 className="mt-2 font-display text-4xl uppercase lg:text-5xl">Order #{order.number}</h1>
+          <h1 className="mt-8 font-display text-4xl uppercase lg:text-5xl">Order #{order.number}</h1>
+          <p className="script-line mt-3">Thank you</p>
           <PaymentStatus orderId={id} initialStatus={order.status} />
           <p className="mt-2">A confirmation will be sent to {order.email}.</p>
           <div className="mt-10 border border-line p-6 text-left text-sm">
@@ -41,7 +41,7 @@ export default async function OrderConfirmation({ searchParams }: { searchParams
           </div>
         </>
       ) : (
-        <h1 className="mt-2 font-display text-4xl uppercase">We could not find that order</h1>
+        <h1 className="mt-8 font-display text-4xl uppercase">We could not find that order</h1>
       )}
       <Link href="/shop" className="btn-outline mt-10">Continue shopping</Link>
     </section>

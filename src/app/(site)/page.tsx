@@ -29,8 +29,8 @@ export default async function Home() {
           <Cover src={hero.rightImage} alt="Hero photo" priority sizes="50vw" className={hero.rightImage ? "" : "!bg-line"} />
         </div>
         <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
-          <p className="script-line">{hero.script}</p>
-          <h1 className="display-xl mt-2">{hero.title}</h1>
+          <h1 className="display-xl">{hero.title}</h1>
+          <p className="script-line mt-3">{hero.script}</p>
           <Link href={hero.buttonHref} className="btn-outline mt-8">
             {hero.buttonLabel}
           </Link>
@@ -49,7 +49,7 @@ export default async function Home() {
         <Reveal>
           <div className="relative mb-12">
             <h2 className="display-xl">Catalog</h2>
-            <p className="script-line absolute right-0 top-0 hidden sm:block">Made for you</p>
+            <p className="script-line mt-3">Made for you</p>
           </div>
         </Reveal>
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 lg:gap-6">
@@ -78,8 +78,8 @@ export default async function Home() {
           <Reveal>
             <div className="mb-12 flex flex-wrap items-end justify-between gap-6">
               <div>
-                <p className="script-line">Loved the most</p>
                 <h2 className="display-xl">Best sellers</h2>
+                <p className="script-line mt-3">Loved the most</p>
               </div>
               <Link href="/shop" className="btn-outline">
                 Shop all
@@ -103,8 +103,8 @@ export default async function Home() {
         </div>
         <div className="flex flex-col items-start justify-center gap-4 bg-gold p-8 text-ink lg:p-24">
           <Logo color="ink" height={26} />
-          <p className="font-script text-3xl">{feature.script}</p>
           <h2 className="font-display text-4xl uppercase text-ink lg:text-5xl">{feature.title}</h2>
+          <p className="font-script text-[2rem] leading-tight">{feature.script}</p>
           <p className="max-w-sm">{feature.text}</p>
           <Link href={feature.buttonHref} className="btn-outline mt-2">
             {feature.buttonLabel}
@@ -120,8 +120,8 @@ export default async function Home() {
               <Shaped image={{ src: comingSoon.image || undefined, alt: comingSoon.title }} shape="arch" sizes="(min-width: 1024px) 24rem, 80vw" className="!bg-line [&_.placeholder]:!bg-line" />
             </Reveal>
             <Reveal>
-              <p className="script-line">{comingSoon.script}</p>
-              <h2 className="mt-2 font-display text-4xl uppercase lg:text-6xl">{comingSoon.title}</h2>
+              <h2 className="font-display text-4xl uppercase lg:text-6xl">{comingSoon.title}</h2>
+              <p className="script-line mt-3">{comingSoon.script}</p>
               {comingSoon.launch && <p className="label mt-4 text-gold-text">{comingSoon.launch}</p>}
               <p className="mb-8 mt-4 max-w-md">{comingSoon.text}</p>
               <SignupForm source="coming_soon" buttonLabel="Notify me" />

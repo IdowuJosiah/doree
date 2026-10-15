@@ -15,7 +15,7 @@ export default async function LookbookPage() {
     <section className="section container-page">
       <div className="relative mb-12">
         <h1 className="display-xl">Lookbook</h1>
-        <p className="script-line absolute right-0 top-0 hidden sm:block">Worn and loved</p>
+        <p className="script-line mt-3">Worn and loved</p>
       </div>
       {lookbook.photos.length === 0 ? (
         <p>New photos are coming soon.</p>

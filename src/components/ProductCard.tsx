@@ -20,7 +20,14 @@ export function ProductCard({ product }: { product: Product }) {
         <h3 className="mt-4 font-sans text-base">{product.name}</h3>
         <p className="text-sm">{product.soldOut ? "Sold out" : formatPrice(product.price)}</p>
       </Link>
-      <WishlistButton productId={product.id} name={product.name} className="absolute right-3 top-3" />
+      {/* Sits on the bottom corner of the photo; the photo box is always 3:4. */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 aspect-[3/4]">
+        <WishlistButton
+          productId={product.id}
+          name={product.name}
+          className="pointer-events-auto absolute bottom-3 right-3 rounded-full bg-[rgba(253,250,244,0.9)]"
+        />
+      </div>
     </article>
   );
 }

@@ -16,8 +16,8 @@ export default async function AboutPage() {
       <section className="relative flex min-h-[60vh] items-center justify-center">
         <Cover alt="Dorée" priority />
         <div className="relative px-4 text-center">
-          <p className="script-line">{page.intro}</p>
-          <h1 className="display-xl mt-2">{page.title}</h1>
+          <h1 className="display-xl">{page.title}</h1>
+          <p className="script-line mt-3">{page.intro}</p>
         </div>
       </section>
       <section className="section container-page">

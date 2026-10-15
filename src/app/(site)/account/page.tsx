@@ -28,8 +28,8 @@ export default async function AccountPage({ searchParams }: { searchParams: { sa
     <section className="section container-page">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="script-line">Welcome{customer?.name ? `, ${customer.name.split(" ")[0]}` : ""}</p>
           <h1 className="display-xl">Account</h1>
+          <p className="script-line mt-3">Welcome{customer?.name ? `, ${customer.name.split(" ")[0]}` : ""}</p>
         </div>
         <form action={signOut}><button type="submit" className="btn-outline">Sign out</button></form>
       </div>
