@@ -51,7 +51,7 @@ export const contentDefaults: SiteContent = {
     rightImage: "",
   },
   brand_statement: {
-    text: "Everyday jewelry, made slowly and worn for years. Each piece is designed to feel like yours.",
+    text: "She who is golden",
   },
   feature_panel: {
     script: "Jewelry created with love",
@@ -61,7 +61,7 @@ export const contentDefaults: SiteContent = {
     buttonHref: "/shop",
     image: "",
   },
-  instagram: { handle: "@doree", url: "https://www.instagram.com/" },
+  instagram: { handle: "@doreeofficial_", url: "https://www.instagram.com/doreeofficial_/" },
   announcement: { text: "" },
   coming_soon: {
     enabled: true,

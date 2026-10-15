@@ -1,5 +1,6 @@
 // Renders the plain text Dorée writes in the admin: blank lines separate
-// paragraphs, "## " starts a heading, "- " starts a bullet. No HTML is
+// paragraphs, "## " starts a heading, "- " starts a bullet and "1. " a numbered
+// step. A paragraph line can lead into a list in the same block. No HTML is
 // interpreted, so nothing typed there can break or inject into the page.
 
 export type Heading = { id: string; text: string };
@@ -26,10 +27,20 @@ export function TextBody({ body }: { body: string }) {
           out.push(<h2 key="h" id={slug(text)} className="scroll-mt-28 pt-4 font-display text-2xl">{text}</h2>);
           rest = lines.slice(1);
         }
-        if (rest.length && rest.every((l) => l.startsWith("- "))) {
-          out.push(<ul key="l" className="list-disc space-y-1 pl-5">{rest.map((l, j) => <li key={j}>{l.slice(2)}</li>)}</ul>);
-        } else if (rest.length) {
-          out.push(<p key="p">{rest.join(" ")}</p>);
+        // Group consecutive lines: bullets, numbered steps, or plain text.
+        const kind = (l: string) => (l.startsWith("- ") ? "ul" : /^\d+\.\s/.test(l) ? "ol" : "p");
+        let j = 0;
+        while (j < rest.length) {
+          const k = kind(rest[j]);
+          const group: string[] = [];
+          while (j < rest.length && kind(rest[j]) === k) group.push(rest[j++]);
+          if (k === "ul") {
+            out.push(<ul key={j} className="list-disc space-y-1 pl-5">{group.map((l, n) => <li key={n}>{l.slice(2)}</li>)}</ul>);
+          } else if (k === "ol") {
+            out.push(<ol key={j} className="list-decimal space-y-1 pl-5">{group.map((l, n) => <li key={n}>{l.replace(/^\d+\.\s/, "")}</li>)}</ol>);
+          } else {
+            out.push(<p key={j}>{group.join(" ")}</p>);
+          }
         }
         return <div key={i} className="space-y-3">{out}</div>;
       })}

@@ -2,7 +2,7 @@
 // fees, announcement bar, Instagram handle) lives in the database.
 export const siteConfig = {
   name: "Dorée",
-  tagline: "Jewelry created with love",
+  tagline: "She who is golden",
   contactEmail: "hello@example.com",
   currency: "USD",
   locale: "en-US",

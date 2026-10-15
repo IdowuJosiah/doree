@@ -25,7 +25,11 @@ export const PAGE_DEFAULTS: Record<string, TextPage> = {
     intro: "How delivery and shipping fees work.",
     body: "## Fees\nThe shipping fee is calculated at checkout from your delivery state.\n\n## Delivery\nWe arrange delivery ourselves and will be in touch by email once your order is on its way.",
   },
-  returns: { title: "Returns", intro: "Our returns policy.", body: "Our full returns policy will be published here soon. In the meantime, please contact us about any order." },
+  returns: {
+    title: "Returns & exchanges",
+    intro: "Exchanges are welcome within 14 days of delivery. We do not offer refunds.",
+    body: "## Return window\nAll returns and exchanges must be started within 14 days of the date of delivery.\n\n## Condition requirements\nItems must be:\n- Unworn and unwashed\n- In their original packaging\n- Free from damage or defects caused by customer misuse\n\n## What's allowed\nWe offer exchanges only. Refunds are not offered.\n- Exchange for a different size\n- Exchange for a different color\n- Exchange for a different design\n\n## Shipping\n- The customer pays the cost of shipping the return\n- Dorée & Co covers the cost of shipping the exchange to you\n\n## Items not eligible for return or exchange\n- Personalized or custom-ordered pieces\n- Items damaged through customer misuse or neglect\n- Items returned without their original packaging\n- Items that have been worn or washed\n\n## How to start a return or exchange\n1. DM @doreeofficial_ on Instagram within 14 days of delivery\n2. Include photos of the item, unworn and in its packaging\n3. Tell us the reason for the return or exchange\n4. Wait for our confirmation and return shipping instructions\n5. Ship the item back at your expense\n6. Once we have received and inspected it, we will send your exchange\n\n## Care\nTo preserve your piece, avoid harsh chemicals, perfumes and alcohol, and store it in a dry place. All Dorée & Co jewelry is 100% non-tarnish and designed to last when cared for properly.\n\n## Questions?\nDM us anytime on Instagram: @doreeofficial_",
+  },
   privacy: { title: "Privacy", intro: "How we look after your information.", body: "We use your details only to process your order and, if you sign up, to tell you about new collections. Payments are handled by Square; we never see or store your card details." },
   terms: { title: "Terms", intro: "The terms of using this site and buying from us.", body: "Our full terms will be published here soon." },
   about: {

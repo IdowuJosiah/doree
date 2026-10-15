@@ -7,9 +7,9 @@ on conflict (id) do nothing;
 
 insert into public.site_content (key, value) values
   ('home_hero', '{"script":"Jewelry created with love","title":"The Soleil Collection","buttonLabel":"Shop now","buttonHref":"/shop","leftImage":"","rightImage":""}'),
-  ('brand_statement', '{"text":"Everyday jewelry, made slowly and worn for years. Each piece is designed to feel like yours."}'),
+  ('brand_statement', '{"text":"She who is golden"}'),
   ('feature_panel', '{"script":"Jewelry created with love","title":"Soleil","text":"Warm gold, soft curves and pieces light enough to forget you are wearing them.","buttonLabel":"Explore","buttonHref":"/shop","image":""}'),
-  ('instagram', '{"handle":"@doree","url":"https://www.instagram.com/"}'),
+  ('instagram', '{"handle":"@doreeofficial_","url":"https://www.instagram.com/doreeofficial_/"}'),
   ('announcement', '{"text":""}'),
   ('lookbook', '{"photos":[]}')
 on conflict (key) do nothing;
