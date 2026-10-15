@@ -33,12 +33,12 @@ function SizeTables() {
   return (
     <div className="mt-12 space-y-10">
       <table className="w-full text-sm">
-        <caption className="mb-3 text-left font-display text-xl">Ring sizes</caption>
+        <caption className="mb-3 text-left font-statement text-xl font-normal">Ring sizes</caption>
         <thead><tr><th className={th}>US size</th><th className={th}>Circumference (mm)</th><th className={th}>Diameter (mm)</th></tr></thead>
         <tbody>{rings.map((r) => <tr key={r[0]}>{r.map((c, i) => <td key={i} className={td}>{c}</td>)}</tr>)}</tbody>
       </table>
       <table className="w-full text-sm">
-        <caption className="mb-3 text-left font-display text-xl">Bracelet lengths</caption>
+        <caption className="mb-3 text-left font-statement text-xl font-normal">Bracelet lengths</caption>
         <thead><tr><th className={th}>Bracelet length</th><th className={th}>Fits a wrist of</th></tr></thead>
         <tbody>{bracelets.map((r) => <tr key={r[0]}>{r.map((c, i) => <td key={i} className={td}>{c}</td>)}</tr>)}</tbody>
       </table>
