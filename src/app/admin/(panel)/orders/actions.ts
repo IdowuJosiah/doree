@@ -1,7 +1,9 @@
 "use server";
 
 import { adminDb } from "@/lib/auth";
+import { sendShippedEmail } from "@/lib/email/order-emails";
 import { fail, saved, str } from "../_lib";
+import { redirect } from "next/navigation";
 
 // Orders become Paid only through the Square webhook, which also reduces
 // stock. Dorée can mark a paid order Fulfilled (or back to Paid), and can
@@ -22,6 +24,12 @@ export async function setOrderStatus(id: string, fd: FormData) {
   if (!(allowed[order.status] ?? []).includes(next)) fail(path, `An order that is ${order.status} cannot be changed to ${next}.`);
   const { error } = await db.from("orders").update({ status: next }).eq("id", id);
   if (error) fail(path, error.message);
+
+  // Marking a paid order Fulfilled emails the customer that it is on its way.
+  if (order.status === "paid" && next === "fulfilled") {
+    const sent = await sendShippedEmail(id, str(fd, "customer_message").slice(0, 2000));
+    redirect(`${path}?saved=1&emailed=${sent ? "1" : "0"}`);
+  }
   saved(path);
 }
 

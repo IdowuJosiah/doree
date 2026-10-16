@@ -8,6 +8,7 @@ const nav = [
   { href: "/admin/inventory", label: "Inventory" },
   { href: "/admin/collections", label: "Collections" },
   { href: "/admin/orders", label: "Orders" },
+  { href: "/admin/messages", label: "Messages" },
   { href: "/admin/shipping", label: "Shipping" },
   { href: "/admin/content", label: "Site content" },
   { href: "/admin/subscribers", label: "Subscribers" },

@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: "Order" };
 
 const labels: Record<string, string> = { pending: "Pending", paid: "Paid", fulfilled: "Fulfilled", cancelled: "Cancelled" };
 
-export default async function OrderPage({ params, searchParams }: { params: { id: string }; searchParams: { error?: string; saved?: string } }) {
+export default async function OrderPage({ params, searchParams }: { params: { id: string }; searchParams: { error?: string; saved?: string; emailed?: string } }) {
   const db = await adminDb();
   const { data: o } = await db.from("orders").select("*, order_items(id, name, price, quantity)").eq("id", params.id).maybeSingle();
   if (!o) notFound();
@@ -22,6 +22,12 @@ export default async function OrderPage({ params, searchParams }: { params: { id
       <Link href="/admin/orders" className="text-link text-sm">← Orders</Link>
       <h1 className="mb-6 mt-2 font-display text-4xl uppercase">Order #{o.number}</h1>
       <Notice searchParams={searchParams} />
+      {searchParams.emailed === "1" && (
+        <p role="status" className="-mt-3 mb-6 text-sm text-gold-text">{o.email} has been emailed that the order is on its way.</p>
+      )}
+      {searchParams.emailed === "0" && (
+        <p role="alert" className="-mt-3 mb-6 text-sm text-red-800">The “on its way” email could not be sent. Check the email settings, or write to {o.email} directly.</p>
+      )}
 
       <Card title="Items">
         <table className="w-full text-left text-sm">
@@ -61,13 +67,21 @@ export default async function OrderPage({ params, searchParams }: { params: { id
       <Card title="Status" hint="Paid is set automatically when Square confirms the payment. Cancelling a paid order does not put stock back; adjust it under the product’s variants.">
         <p className="mb-4">Current status: <strong>{labels[o.status]}</strong></p>
         {next[o.status].length > 0 && (
-          <form action={setOrderStatus.bind(null, o.id)} className="flex flex-wrap items-end gap-3">
+          <form action={setOrderStatus.bind(null, o.id)} className="max-w-xl space-y-4">
             <div>
               <label htmlFor="status" className="label mb-1 block">Change to</label>
-              <select id="status" name="status" className="field !h-10">
+              <select id="status" name="status" className="field !h-10 !w-auto">
                 {next[o.status].map((s) => <option key={s} value={s}>{labels[s]}</option>)}
               </select>
             </div>
+            {o.status === "paid" && (
+              <div>
+                <TextArea label="Message to the customer (optional)" name="customer_message" rows={3} />
+                <p className="mt-1 text-xs opacity-70">
+                  Marking the order Fulfilled emails {o.email} that it is on its way. Anything written here, such as a tracking number, is included in that email.
+                </p>
+              </div>
+            )}
             <Small>Update status</Small>
           </form>
         )}

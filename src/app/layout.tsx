@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { SITE_URL } from "@/lib/site-url";
 import { siteConfig } from "@/lib/config";
 import "./globals.css";
 
@@ -28,6 +29,8 @@ const script = localFont({
 export const metadata: Metadata = {
   title: { default: `${siteConfig.name} | ${siteConfig.tagline}`, template: `%s | ${siteConfig.name}` },
   description: "Jewelry created with love.",
+  metadataBase: new URL(SITE_URL),
+  openGraph: { siteName: siteConfig.name, locale: "en_US", type: "website" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { sendEmail } from "./send";
-import { contactAlert, customerConfirmation, escapeHtml, newOrderAlert, type EmailOrder } from "./templates";
+import { contactAlert, customerConfirmation, escapeHtml, newOrderAlert, orderShipped, type EmailOrder } from "./templates";
 
 const order: EmailOrder = {
   id: "0b8a3c1e-5d7f-4a62-9c1d-2f4e6a8b0c3d",
@@ -35,6 +35,21 @@ describe("email templates", () => {
     const { subject, html } = newOrderAlert(order, "https://doree.example");
     expect(subject).toBe("New order #1001: $151.00");
     expect(html).toContain(`https://doree.example/admin/orders/${order.id}`);
+  });
+
+  it("tells the customer the order is on its way, with Dorée's note escaped", () => {
+    const { subject, html, text } = orderShipped(order, "https://doree.example", "Tracking: <b>9400 1000</b>");
+    expect(subject).toBe("Your Dorée order #1001 is on its way");
+    expect(html).toContain("Tracking: &lt;b&gt;9400 1000&lt;/b&gt;");
+    expect(text).toContain("Tracking: <b>9400 1000</b>");
+    expect(html).toContain("https://doree.example/guides/jewelry-care");
+    expect(html).toContain("Austin, TX 78701");
+  });
+
+  it("leaves the note out when there is none", () => {
+    const { html, text } = orderShipped(order, "", "   ");
+    expect(html).not.toContain("border-left");
+    expect(text).not.toMatch(/\n\n\n/);
   });
 
   it("escapes contact messages", () => {

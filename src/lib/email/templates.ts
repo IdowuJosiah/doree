@@ -122,6 +122,40 @@ ${adminLink ? `<p style="margin:28px 0 0;"><a href="${escapeHtml(adminLink)}" st
   return { subject, html, text };
 }
 
+export function orderShipped(order: EmailOrder, siteUrl: string, message = ""): Email {
+  const firstName = order.name.split(" ")[0] || "there";
+  const address = addressLines(order.address);
+  const subject = `Your ${siteConfig.name} order #${order.number} is on its way`;
+  const note = message.trim();
+  const html = layout(
+    subject,
+    `<p style="margin:0 0 8px;font-size:14px;letter-spacing:2px;text-transform:uppercase;color:${GOLD_TEXT};">Order #${order.number}</p>
+<h1 style="margin:0 0 16px;font-size:26px;color:${GOLD_TEXT};">It's on its way, ${escapeHtml(firstName)}</h1>
+<p style="margin:0 0 24px;font-size:17px;line-height:1.6;">Your order has been sent. We hope you love it.</p>
+${note ? `<p style="margin:0 0 24px;padding:16px;background:${CREAM};border-left:3px solid ${GOLD};font-size:16px;line-height:1.6;white-space:pre-wrap;">${escapeHtml(note)}</p>` : ""}
+${itemsTable(order)}
+<p style="margin:24px 0 4px;font-size:14px;letter-spacing:2px;text-transform:uppercase;color:${GOLD_TEXT};">Delivering to</p>
+<p style="margin:0;font-size:16px;line-height:1.5;">${[order.name, ...address].map(escapeHtml).join("<br>")}</p>
+${siteUrl ? `<p style="margin:28px 0 0;"><a href="${escapeHtml(siteUrl)}/guides/jewelry-care" style="display:inline-block;background:${GOLD};color:${INK};text-decoration:none;padding:12px 28px;font-size:14px;letter-spacing:2px;text-transform:uppercase;">Caring for your jewelry</a></p>` : ""}
+<p style="margin:28px 0 0;font-size:15px;line-height:1.6;">Questions about your order? Just reply to this email.</p>`,
+  );
+  const text = [
+    `It's on its way, ${firstName}.`,
+    "",
+    `Your ${siteConfig.name} order #${order.number} has been sent. We hope you love it.`,
+    ...(note ? ["", note] : []),
+    "",
+    itemsText(order),
+    "",
+    "Delivering to:",
+    order.name,
+    ...address,
+    "",
+    "Questions about your order? Just reply to this email.",
+  ].join("\n");
+  return { subject, html, text };
+}
+
 export function contactAlert(msg: { name: string; email: string; message: string }): Email {
   const subject = `New message from ${msg.name}`;
   const html = layout(
