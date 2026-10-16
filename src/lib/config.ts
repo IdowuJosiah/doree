@@ -3,7 +3,7 @@
 export const siteConfig = {
   name: "Dorée",
   tagline: "She who is golden",
-  contactEmail: "hello@example.com",
+  contactEmail: "hello@shopdoree.co",
   currency: "USD",
   locale: "en-US",
 };
