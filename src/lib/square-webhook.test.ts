@@ -10,7 +10,7 @@ const event = (over: Partial<NonNullable<SquarePaymentEvent["data"]>["object"]> 
 
 const deps = (over: Partial<WebhookDeps> = {}): WebhookDeps => ({
   currency: "USD",
-  findOrder: vi.fn(async () => ({ id: ORDER_ID, status: "pending", total: 7600 })),
+  findOrder: vi.fn(async () => ({ id: ORDER_ID, status: "pending", total: 7600, square_payment_id: null as string | null })),
   markPaid: vi.fn(async () => true),
   ...over,
 });
@@ -60,6 +60,19 @@ describe("handlePaymentEvent", () => {
 
   it("reports unknown orders and repeat deliveries", async () => {
     expect(await handlePaymentEvent(event(), deps({ findOrder: async () => null }))).toBe("unknown_order");
-    expect(await handlePaymentEvent(event(), deps({ markPaid: async () => false }))).toBe("already_processed");
+    const paid = { id: ORDER_ID, status: "paid", total: 7600, square_payment_id: "pay_1" };
+    expect(await handlePaymentEvent(event(), deps({ findOrder: async () => paid }))).toBe("already_processed");
+    // Two deliveries racing: the order looked pending, but the other one marked it paid first.
+    const raced = deps({ markPaid: async () => false });
+    vi.mocked(raced.findOrder).mockResolvedValueOnce({ ...paid, status: "pending", square_payment_id: null }).mockResolvedValueOnce(paid);
+    expect(await handlePaymentEvent(event(), raced)).toBe("already_processed");
+  });
+
+  it("flags a second payment for an order that is already paid or was cancelled", async () => {
+    const d = deps({ findOrder: async () => ({ id: ORDER_ID, status: "paid", total: 7600, square_payment_id: "pay_0" }) });
+    expect(await handlePaymentEvent(event(), d)).toBe("unexpected_payment");
+    expect(d.markPaid).not.toHaveBeenCalled();
+    const cancelled = deps({ findOrder: async () => ({ id: ORDER_ID, status: "cancelled", total: 7600, square_payment_id: null }) });
+    expect(await handlePaymentEvent(event(), cancelled)).toBe("unexpected_payment");
   });
 });

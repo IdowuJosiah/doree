@@ -1,7 +1,7 @@
 import "server-only";
 import { createServiceClient } from "../supabase/service";
 import { notifyAddress, sendEmail, siteUrl } from "./send";
-import { customerConfirmation, newOrderAlert, orderShipped, type EmailOrder } from "./templates";
+import { customerConfirmation, newOrderAlert, orderShipped, paymentReviewAlert, type EmailOrder } from "./templates";
 
 async function loadOrder(orderId: string): Promise<EmailOrder | null> {
   const { data: o, error } = await createServiceClient()
@@ -49,5 +49,26 @@ export async function sendShippedEmail(orderId: string, message: string) {
     email: orderShipped(order, siteUrl(), message),
     replyTo: notifyAddress() || undefined,
     idempotencyKey: `order-${order.id}-shipped`,
+  });
+}
+
+const REVIEW_REASONS: Record<string, string> = {
+  amount_mismatch: "the amount does not match the order total, so the order was not marked paid",
+  unknown_order: "no matching order was found",
+  unexpected_payment: "that order was already paid or had been cancelled",
+};
+
+/** Tells Dorée about a Square payment that needs a human look. */
+export async function sendPaymentReviewAlert(args: { result: string; orderId: string; paymentId: string; amount: number | null }) {
+  const owner = notifyAddress();
+  if (!owner) return false;
+  const { data } = await createServiceClient().from("orders").select("number").eq("id", args.orderId).maybeSingle();
+  return sendEmail({
+    to: owner,
+    email: paymentReviewAlert(
+      { orderNumber: data?.number ?? null, orderId: args.orderId, paymentId: args.paymentId, amount: args.amount, reason: REVIEW_REASONS[args.result] ?? "it could not be matched" },
+      siteUrl(),
+    ),
+    idempotencyKey: `payment-${args.paymentId}-review`,
   });
 }

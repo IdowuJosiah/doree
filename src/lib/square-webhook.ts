@@ -26,7 +26,7 @@ export type SquarePaymentEvent = {
   };
 };
 
-export type OrderRecord = { id: string; status: string; total: number };
+export type OrderRecord = { id: string; status: string; total: number; square_payment_id: string | null };
 
 export type WebhookDeps = {
   currency: string;
@@ -37,7 +37,7 @@ export type WebhookDeps = {
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export type WebhookResult = "ignored" | "paid" | "already_processed" | "amount_mismatch" | "unknown_order";
+export type WebhookResult = "ignored" | "paid" | "already_processed" | "amount_mismatch" | "unknown_order" | "unexpected_payment";
 
 /**
  * Only a COMPLETED payment changes anything. Failed, cancelled and abandoned
@@ -55,5 +55,12 @@ export async function handlePaymentEvent(event: SquarePaymentEvent, deps: Webhoo
   if (!order) return "unknown_order";
   if (payment.amount_money?.amount !== order.total || payment.amount_money?.currency !== deps.currency) return "amount_mismatch";
 
-  return (await deps.markPaid(order.id, payment.id)) ? "paid" : "already_processed";
+  if (order.status === "pending" && (await deps.markPaid(order.id, payment.id))) return "paid";
+
+  // Square repeats deliveries for the same payment; those are expected. A
+  // different payment for an order that is no longer pending (a second charge
+  // for the same order, or a payment for a cancelled order) means the customer
+  // has paid money the shop has not matched to an order.
+  const current = order.status === "pending" ? await deps.findOrder(order.id) : order;
+  return current?.square_payment_id === payment.id ? "already_processed" : "unexpected_payment";
 }

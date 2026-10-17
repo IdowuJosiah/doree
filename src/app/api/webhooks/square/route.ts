@@ -1,7 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { siteConfig } from "@/lib/config";
-import { sendOrderEmails } from "@/lib/email/order-emails";
+import { sendOrderEmails, sendPaymentReviewAlert } from "@/lib/email/order-emails";
 import { createServiceClient } from "@/lib/supabase/service";
 import { handlePaymentEvent, verifySquareSignature, type SquarePaymentEvent } from "@/lib/square-webhook";
 
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     const result = await handlePaymentEvent(event, {
       currency: siteConfig.currency,
       async findOrder(orderId) {
-        const { data, error } = await db.from("orders").select("id, status, total").eq("id", orderId).maybeSingle();
+        const { data, error } = await db.from("orders").select("id, status, total, square_payment_id").eq("id", orderId).maybeSingle();
         if (error) throw error;
         return data;
       },
@@ -38,7 +38,11 @@ export async function POST(request: Request) {
       // retries never send duplicates. Email problems are logged, not retried.
       await sendOrderEmails(event.data!.object!.payment!.reference_id!);
     }
-    if (result === "amount_mismatch" || result === "unknown_order") console.error("square webhook", result);
+    if (result === "amount_mismatch" || result === "unknown_order" || result === "unexpected_payment") {
+      const payment = event.data!.object!.payment!;
+      console.error("square webhook", result, payment.id);
+      await sendPaymentReviewAlert({ result, orderId: payment.reference_id!, paymentId: payment.id!, amount: payment.amount_money?.amount ?? null });
+    }
     return NextResponse.json({ result });
   } catch (e) {
     // A 5xx makes Square retry the delivery.

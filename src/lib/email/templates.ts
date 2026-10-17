@@ -156,6 +156,26 @@ ${siteUrl ? `<p style="margin:28px 0 0;"><a href="${escapeHtml(siteUrl)}/guides/
   return { subject, html, text };
 }
 
+/** Money arrived in Square that the shop could not match to a pending order. */
+export function paymentReviewAlert(p: { orderNumber: number | null; orderId: string; paymentId: string; amount: number | null; reason: string }, siteUrl: string): Email {
+  const label = p.orderNumber ? `order #${p.orderNumber}` : "an order";
+  const subject = `Check a Square payment for ${label}`;
+  const adminLink = siteUrl && p.orderNumber ? `${siteUrl}/admin/orders/${p.orderId}` : "";
+  const amount = p.amount === null ? "" : ` of ${formatPrice(p.amount)}`;
+  const lines = [
+    `Square received a payment${amount} for ${label}, but ${p.reason}.`,
+    "The customer may have been charged twice. Look the payment up in the Square dashboard (Transactions) and refund it if it is a duplicate.",
+    `Square payment ID: ${p.paymentId}`,
+  ];
+  const html = layout(
+    subject,
+    `<h1 style="margin:0 0 16px;font-size:24px;color:${GOLD_TEXT};">Please check this payment</h1>
+${lines.map((l) => `<p style="margin:0 0 12px;font-size:16px;line-height:1.6;">${escapeHtml(l)}</p>`).join("\n")}
+${adminLink ? `<p style="margin:28px 0 0;"><a href="${escapeHtml(adminLink)}" style="display:inline-block;background:${GOLD};color:${INK};text-decoration:none;padding:12px 28px;font-size:14px;letter-spacing:2px;text-transform:uppercase;">Open the order</a></p>` : ""}`,
+  );
+  return { subject, html, text: [...lines, adminLink ? `Open the order: ${adminLink}` : ""].join("\n\n") };
+}
+
 export function contactAlert(msg: { name: string; email: string; message: string }): Email {
   const subject = `New message from ${msg.name}`;
   const html = layout(
