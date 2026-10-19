@@ -13,7 +13,7 @@ npm run dev
 ### Database
 
 1. Create a Supabase project.
-2. In the Supabase SQL editor, open a new query tab and run `supabase/migrations/0001_init.sql`, then, in another new tab, `supabase/seed.sql` (sample products, collections, and placeholder shipping fees). Copy each file whole: on GitHub open the file, click **Raw**, select all and copy. Make sure nothing is highlighted in the editor before pressing Run, or only the highlighted part runs. Then run `supabase/migrations/0002_best_sellers_and_signups.sql` `supabase/migrations/0003_contact_messages.sql` and `supabase/migrations/0004_brand_tagline.sql` the same way. All of these files are safe to run again.
+2. In the Supabase SQL editor, open a new query tab and run `supabase/migrations/0001_init.sql`, then, in another new tab, `supabase/seed.sql` (sample products, collections, and placeholder shipping fees). Copy each file whole: on GitHub open the file, click **Raw**, select all and copy. Make sure nothing is highlighted in the editor before pressing Run, or only the highlighted part runs. Then run `supabase/migrations/0002_best_sellers_and_signups.sql` `supabase/migrations/0003_contact_messages.sql` and `supabase/migrations/0004_brand_tagline.sql` the same way. All of these files are safe to run again. Before Dorée adds her own products, run `supabase/cleanup_sample_data.sql` once to remove the sample products and test orders; do not run `seed.sql` on the live shop again.
 3. Create the admin user in Supabase Auth, then give them the admin role. The role lives in `app_metadata`, which users cannot edit themselves:
 
 ```sql

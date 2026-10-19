@@ -1,4 +1,6 @@
--- Sample data so every page can be built and reviewed. Safe to re-run.
+-- Sample data for a NEW, empty development database only. Do not run it on
+-- the live shop: it adds twelve sample products. To remove them again, run
+-- supabase/cleanup_sample_data.sql.
 -- Shipping values are placeholders: Dorée sets the real ones in /admin/shipping.
 
 insert into public.shipping_settings (id, fixed_fee_states, fixed_fee, other_fee)
