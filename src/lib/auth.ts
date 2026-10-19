@@ -11,7 +11,7 @@ export const isAdminUser = (user: User | null) => user?.app_metadata?.role === "
 
 export async function getCurrentUser() {
   if (!isSupabaseConfigured()) return null;
-  const { data } = await createSessionClient().auth.getUser();
+  const { data } = await (await createSessionClient()).auth.getUser();
   return data.user;
 }
 
@@ -27,5 +27,5 @@ export async function requireAdmin() {
 // so database row-level security enforces the role as well.
 export async function adminDb() {
   await requireAdmin();
-  return createSessionClient();
+  return await createSessionClient();
 }

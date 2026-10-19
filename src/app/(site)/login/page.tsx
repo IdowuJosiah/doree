@@ -19,7 +19,8 @@ function Input({ label, name, type = "text", autoComplete }: { label: string; na
   );
 }
 
-export default function LoginPage({ searchParams }: { searchParams: { error?: string; next?: string; tab?: string; sent?: string } }) {
+export default async function LoginPage(props: { searchParams: Promise<{ error?: string; next?: string; tab?: string; sent?: string }> }) {
+  const searchParams = await props.searchParams;
   const signup = searchParams.tab === "signup";
   const next = searchParams.next ?? "";
   const tab = (active: boolean) => `label flex-1 border-b-2 py-3 text-center ${active ? "border-ink" : "border-line opacity-60 hover:opacity-100"}`;

@@ -11,7 +11,7 @@ const ids = z.array(z.string().uuid()).max(200);
 export async function syncWishlist(localIds: string[]): Promise<string[] | null> {
   const user = await getCurrentUser();
   if (!user) return null;
-  const db = createSessionClient();
+  const db = await createSessionClient();
   const parsed = ids.safeParse(localIds);
   if (parsed.success && parsed.data.length) {
     await db
@@ -25,7 +25,7 @@ export async function syncWishlist(localIds: string[]): Promise<string[] | null>
 export async function setWishlisted(productId: string, on: boolean) {
   const user = await getCurrentUser();
   if (!user || !z.string().uuid().safeParse(productId).success) return;
-  const db = createSessionClient();
+  const db = await createSessionClient();
   if (on) await db.from("wishlist_items").upsert({ customer_id: user.id, product_id: productId }, { ignoreDuplicates: true });
   else await db.from("wishlist_items").delete().eq("customer_id", user.id).eq("product_id", productId);
 }

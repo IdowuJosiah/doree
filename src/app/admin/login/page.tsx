@@ -6,7 +6,8 @@ import { adminSignIn } from "./actions";
 
 export const metadata: Metadata = { title: "Sign in" };
 
-export default async function AdminLoginPage({ searchParams }: { searchParams: { error?: string; next?: string } }) {
+export default async function AdminLoginPage(props: { searchParams: Promise<{ error?: string; next?: string }> }) {
+  const searchParams = await props.searchParams;
   if (isAdminUser(await getCurrentUser())) redirect("/admin");
 
   return (

@@ -8,7 +8,8 @@ export const metadata: Metadata = { title: "Orders" };
 const statuses = ["pending", "paid", "fulfilled", "cancelled"];
 const labels: Record<string, string> = { pending: "Pending", paid: "Paid", fulfilled: "Fulfilled", cancelled: "Cancelled" };
 
-export default async function OrdersPage({ searchParams }: { searchParams: { q?: string; status?: string } }) {
+export default async function OrdersPage(props: { searchParams: Promise<{ q?: string; status?: string }> }) {
+  const searchParams = await props.searchParams;
   const db = await adminDb();
   let query = db.from("orders").select("id, number, name, email, total, status, created_at").order("created_at", { ascending: false }).limit(200);
   if (searchParams.status && statuses.includes(searchParams.status)) query = query.eq("status", searchParams.status);

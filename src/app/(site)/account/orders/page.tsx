@@ -15,7 +15,7 @@ export default async function OrdersPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login?next=/account/orders");
   // Row-level security returns only this customer's orders.
-  const { data } = await createSessionClient()
+  const { data } = await (await createSessionClient())
     .from("orders")
     .select("id, number, created_at, total, status, order_items(name, quantity)")
     .neq("status", "pending")

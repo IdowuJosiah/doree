@@ -5,8 +5,8 @@ import { supabaseAnonKey, supabaseUrl } from "./env";
 
 // Client bound to the signed-in user's session. Queries run as that user, so
 // row-level security applies (this is what admin writes use).
-export function createSessionClient() {
-  const store = cookies();
+export async function createSessionClient() {
+  const store = await cookies();
   return createServerClient(supabaseUrl!, supabaseAnonKey!, {
     cookies: {
       getAll: () => store.getAll(),
@@ -14,7 +14,7 @@ export function createSessionClient() {
         try {
           list.forEach(({ name, value, options }) => store.set(name, value, options));
         } catch {
-          // Called from a Server Component; middleware refreshes the session.
+          // Called from a Server Component; the proxy refreshes the session.
         }
       },
     },

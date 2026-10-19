@@ -12,10 +12,11 @@ export const dynamic = "force-dynamic";
 
 type Address = { line1?: string; line2?: string; city?: string; state?: string; postalCode?: string };
 
-export default async function AccountPage({ searchParams }: { searchParams: { saved?: string; error?: string } }) {
+export default async function AccountPage(props: { searchParams: Promise<{ saved?: string; error?: string }> }) {
+  const searchParams = await props.searchParams;
   const user = await getCurrentUser();
   if (!user) redirect("/login?next=/account");
-  const { data: customer } = await createSessionClient().from("customers").select("name, address").eq("id", user.id).maybeSingle();
+  const { data: customer } = await (await createSessionClient()).from("customers").select("name, address").eq("id", user.id).maybeSingle();
   const a = (customer?.address ?? {}) as Address;
   const field = (label: string, name: string, value?: string, autoComplete?: string) => (
     <div>

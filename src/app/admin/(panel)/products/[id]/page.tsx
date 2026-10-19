@@ -10,13 +10,9 @@ import { addImages, addVariant, deleteImage, deleteVariant, moveImage, saveImage
 
 export const metadata: Metadata = { title: "Edit product" };
 
-export default async function EditProductPage({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams: { error?: string; saved?: string; published?: string; unpublished?: string };
-}) {
+export default async function EditProductPage(props: { params: Promise<{ id: string }>; searchParams: Promise<{ error?: string; saved?: string; published?: string; unpublished?: string }> }) {
+  const params = await props.params;
+  const searchParams = await props.searchParams;
   const db = await adminDb();
   const { data: p } = await db.from("products").select("*").eq("id", params.id).maybeSingle();
   if (!p) notFound();

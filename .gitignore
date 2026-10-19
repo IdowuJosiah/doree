@@ -5,3 +5,6 @@ next-env.d.ts
 *.tsbuildinfo
 .env*.local
 .DS_Store
+
+# Written by next dev for coding tools; not part of the site
+AGENTS.md

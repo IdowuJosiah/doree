@@ -6,7 +6,8 @@ import { createCollection } from "./actions";
 
 export const metadata: Metadata = { title: "Collections" };
 
-export default async function CollectionsPage({ searchParams }: { searchParams: { error?: string; saved?: string } }) {
+export default async function CollectionsPage(props: { searchParams: Promise<{ error?: string; saved?: string }> }) {
+  const searchParams = await props.searchParams;
   const db = await adminDb();
   const { data } = await db.from("collections").select("id, name, slug, sort_order, collection_products(product_id)").order("sort_order");
   return (
@@ -17,7 +18,7 @@ export default async function CollectionsPage({ searchParams }: { searchParams: 
         {(data ?? []).map((c) => (
           <li key={c.id} className="flex items-center justify-between py-3">
             <Link href={`/admin/collections/${c.id}`} className="text-link">{c.name}</Link>
-            <span className="text-sm opacity-70">/{c.slug} · {c.collection_products.length} products</span>
+            <span className="text-sm opacity-70">/{c.slug} · {c.collection_products?.length ?? 0} products</span>
           </li>
         ))}
       </ul>

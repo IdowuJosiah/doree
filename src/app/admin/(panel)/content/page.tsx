@@ -30,7 +30,8 @@ function Image({ contentKey, field, url, label }: { contentKey: string; field: s
   );
 }
 
-export default async function ContentPage({ searchParams }: { searchParams: { error?: string; saved?: string } }) {
+export default async function ContentPage(props: { searchParams: Promise<{ error?: string; saved?: string }> }) {
+  const searchParams = await props.searchParams;
   const db = await adminDb();
   const [{ data }, { data: collections }] = await Promise.all([
     db.from("site_content").select("key, value"),

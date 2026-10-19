@@ -10,7 +10,9 @@ export const metadata: Metadata = { title: "Order" };
 
 const labels: Record<string, string> = { pending: "Pending", paid: "Paid", fulfilled: "Fulfilled", cancelled: "Cancelled" };
 
-export default async function OrderPage({ params, searchParams }: { params: { id: string }; searchParams: { error?: string; saved?: string; emailed?: string } }) {
+export default async function OrderPage(props: { params: Promise<{ id: string }>; searchParams: Promise<{ error?: string; saved?: string; emailed?: string }> }) {
+  const params = await props.params;
+  const searchParams = await props.searchParams;
   const db = await adminDb();
   const { data: o } = await db.from("orders").select("*, order_items(id, name, price, quantity)").eq("id", params.id).maybeSingle();
   if (!o) notFound();

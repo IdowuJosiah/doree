@@ -1,6 +1,7 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import { subscribe, type SignupState } from "@/app/(site)/actions";
 
 function Submit({ label }: { label: string }) {
@@ -13,7 +14,7 @@ function Submit({ label }: { label: string }) {
 }
 
 export function SignupForm({ source, buttonLabel }: { source: "coming_soon" | "newsletter"; buttonLabel: string }) {
-  const [state, action] = useFormState<SignupState, FormData>(subscribe, { status: "idle", message: "" });
+  const [state, action] = useActionState<SignupState, FormData>(subscribe, { status: "idle", message: "" });
 
   if (state.status === "ok") {
     return <p role="status" className="font-statement text-xl font-normal text-gold-text">{state.message}</p>;

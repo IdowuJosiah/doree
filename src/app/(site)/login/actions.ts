@@ -9,7 +9,7 @@ const safeNext = (next: string) => (next.startsWith("/") && !next.startsWith("//
 
 export async function signIn(formData: FormData) {
   const next = safeNext(String(formData.get("next") ?? ""));
-  const { error } = await createSessionClient().auth.signInWithPassword({
+  const { error } = await (await createSessionClient()).auth.signInWithPassword({
     email: String(formData.get("email") ?? ""),
     password: String(formData.get("password") ?? ""),
   });
@@ -23,8 +23,8 @@ export async function signUp(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim().slice(0, 120);
   if (password.length < 8) redirect("/login?tab=signup&error=short");
 
-  const origin = headers().get("origin") ?? "";
-  const { data, error } = await createSessionClient().auth.signUp({
+  const origin = (await headers()).get("origin") ?? "";
+  const { data, error } = await (await createSessionClient()).auth.signUp({
     email,
     password,
     options: { data: { name }, emailRedirectTo: `${origin}/auth/callback?next=/account` },
@@ -36,6 +36,6 @@ export async function signUp(formData: FormData) {
 }
 
 export async function signOut() {
-  await createSessionClient().auth.signOut();
+  await (await createSessionClient()).auth.signOut();
   redirect("/");
 }

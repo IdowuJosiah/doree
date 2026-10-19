@@ -22,7 +22,7 @@ export async function saveDetails(formData: FormData) {
   if (!parsed.success) redirect("/account?error=1");
   const { name, ...address } = parsed.data;
   // Row-level security limits this to the signed-in customer's own row.
-  const { error } = await createSessionClient()
+  const { error } = await (await createSessionClient())
     .from("customers")
     .upsert({ id: user.id, email: user.email ?? "", name, address });
   redirect(error ? "/account?error=1" : "/account?saved=1");

@@ -8,7 +8,8 @@ export const metadata: Metadata = { title: "Messages" };
 
 type Message = { id: string; name: string; email: string; message: string; created_at: string };
 
-export default async function MessagesPage({ searchParams }: { searchParams: { error?: string; saved?: string } }) {
+export default async function MessagesPage(props: { searchParams: Promise<{ error?: string; saved?: string }> }) {
+  const searchParams = await props.searchParams;
   const db = await adminDb();
   const { data, count } = await db
     .from("contact_messages")

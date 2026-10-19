@@ -19,7 +19,8 @@ type Row = {
   product_variants: { stock: number }[];
 };
 
-export default async function ProductsPage({ searchParams }: { searchParams: { q?: string; archived?: string; error?: string; saved?: string; published?: string; unpublished?: string } }) {
+export default async function ProductsPage(props: { searchParams: Promise<{ q?: string; archived?: string; error?: string; saved?: string; published?: string; unpublished?: string }> }) {
+  const searchParams = await props.searchParams;
   const db = await adminDb();
   const showArchived = searchParams.archived === "1";
   let query = db

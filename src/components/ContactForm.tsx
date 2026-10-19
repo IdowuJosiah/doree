@@ -1,6 +1,7 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import { sendMessage, type ContactState } from "@/app/(site)/contact/actions";
 
 function Submit() {
@@ -9,7 +10,7 @@ function Submit() {
 }
 
 export function ContactForm() {
-  const [state, action] = useFormState<ContactState, FormData>(sendMessage, { status: "idle", message: "" });
+  const [state, action] = useActionState<ContactState, FormData>(sendMessage, { status: "idle", message: "" });
   if (state.status === "ok") return <p role="status" className="font-statement text-2xl font-normal text-gold-text">{state.message}</p>;
   return (
     <form action={action} className="space-y-5">

@@ -12,7 +12,7 @@ const safeNext = (next: string) => (next.startsWith("/admin") && !next.startsWit
 export async function adminSignIn(formData: FormData) {
   const next = safeNext(String(formData.get("next") ?? ""));
   if (!isSupabaseConfigured()) redirect("/admin/login?error=1");
-  const db = createSessionClient();
+  const db = await createSessionClient();
   const { data, error } = await db.auth.signInWithPassword({
     email: String(formData.get("email") ?? "").trim(),
     password: String(formData.get("password") ?? ""),
@@ -25,6 +25,6 @@ export async function adminSignIn(formData: FormData) {
 }
 
 export async function adminSignOut() {
-  await createSessionClient().auth.signOut();
+  await (await createSessionClient()).auth.signOut();
   redirect("/admin/login");
 }

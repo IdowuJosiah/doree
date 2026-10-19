@@ -4,13 +4,14 @@ import { TextPageLayout } from "@/components/TextPageLayout";
 import { getPage } from "@/lib/data/pages";
 
 const GUIDES = ["size-guide", "jewelry-care", "materials"];
-type Props = { params: { slug: string } };
+type Props = { params: Promise<{ slug: string }> };
 
 export const revalidate = 60;
 export const dynamicParams = false;
 export const generateStaticParams = () => GUIDES.map((slug) => ({ slug }));
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   return { title: (await getPage(params.slug))?.title };
 }
 
@@ -46,7 +47,8 @@ function SizeTables() {
   );
 }
 
-export default async function GuidePage({ params }: Props) {
+export default async function GuidePage(props: Props) {
+  const params = await props.params;
   if (!GUIDES.includes(params.slug)) notFound();
   const page = await getPage(params.slug);
   if (!page) notFound();

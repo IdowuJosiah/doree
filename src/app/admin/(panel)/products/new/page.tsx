@@ -5,7 +5,8 @@ import { createProduct } from "../actions";
 
 export const metadata: Metadata = { title: "New product" };
 
-export default async function NewProductPage({ searchParams }: { searchParams: { error?: string } }) {
+export default async function NewProductPage(props: { searchParams: Promise<{ error?: string }> }) {
+  const searchParams = await props.searchParams;
   await adminDb();
   return (
     <>

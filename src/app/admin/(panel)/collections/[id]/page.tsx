@@ -8,13 +8,9 @@ import { addProductToCollection, clearBanner, deleteCollection, moveProduct, rem
 
 export const metadata: Metadata = { title: "Edit collection" };
 
-export default async function EditCollectionPage({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams: { error?: string; saved?: string };
-}) {
+export default async function EditCollectionPage(props: { params: Promise<{ id: string }>; searchParams: Promise<{ error?: string; saved?: string }> }) {
+  const params = await props.params;
+  const searchParams = await props.searchParams;
   const db = await adminDb();
   const { data: c } = await db.from("collections").select("*").eq("id", params.id).maybeSingle();
   if (!c) notFound();

@@ -8,7 +8,8 @@ import { saveShipping } from "./actions";
 
 export const metadata: Metadata = { title: "Shipping" };
 
-export default async function ShippingPage({ searchParams }: { searchParams: { error?: string; saved?: string } }) {
+export default async function ShippingPage(props: { searchParams: Promise<{ error?: string; saved?: string }> }) {
+  const searchParams = await props.searchParams;
   const db = await adminDb();
   const { data } = await db.from("shipping_settings").select("fixed_fee_states, fixed_fee, other_fee").eq("id", 1).maybeSingle();
   const s = toShippingSettings(data);

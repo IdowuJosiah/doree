@@ -8,11 +8,12 @@ import { getProductBySlug, listProducts } from "@/lib/data/catalog";
 import { formatPrice } from "@/lib/format";
 import { siteConfig } from "@/lib/config";
 
-type Props = { params: { slug: string } };
+type Props = { params: Promise<{ slug: string }> };
 
 export const revalidate = 60;
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   const product = await getProductBySlug(params.slug);
   if (!product) return {};
   const image = product.images[0]?.src;
@@ -35,7 +36,8 @@ function Accordion({ title, children, open }: { title: string; children: React.R
   );
 }
 
-export default async function ProductPage({ params }: Props) {
+export default async function ProductPage(props: Props) {
+  const params = await props.params;
   const product = await getProductBySlug(params.slug);
   if (!product) notFound();
   const related = (await listProducts()).filter((p) => p.id !== product.id && !p.soldOut).slice(0, 4);

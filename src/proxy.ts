@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 // Refreshes the auth session and gates /admin. Pages and actions check the
 // role again on the server; this is the first line, not the only one.
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const isAdminPath = request.nextUrl.pathname.startsWith("/admin");
   const isAdminLogin = request.nextUrl.pathname === "/admin/login";
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

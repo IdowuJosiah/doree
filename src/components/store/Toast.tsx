@@ -8,7 +8,7 @@ export const useToast = () => useContext(ToastContext);
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [message, setMessage] = useState("");
-  const timer = useRef<ReturnType<typeof setTimeout>>();
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const show = useCallback((m: string) => {
     setMessage(m);

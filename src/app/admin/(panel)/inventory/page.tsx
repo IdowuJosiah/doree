@@ -25,11 +25,8 @@ const filters = [
   { value: "out", label: "Out of stock" },
 ];
 
-export default async function InventoryPage({
-  searchParams,
-}: {
-  searchParams: { q?: string; show?: string; error?: string; saved?: string };
-}) {
+export default async function InventoryPage(props: { searchParams: Promise<{ q?: string; show?: string; error?: string; saved?: string }> }) {
+  const searchParams = await props.searchParams;
   const db = await adminDb();
   const { data } = await db
     .from("product_variants")

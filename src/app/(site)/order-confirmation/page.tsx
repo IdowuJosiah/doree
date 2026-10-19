@@ -11,7 +11,8 @@ export const dynamic = "force-dynamic";
 
 type Item = { name: string; price: number; quantity: number };
 
-export default async function OrderConfirmation({ searchParams }: { searchParams: { order?: string } }) {
+export default async function OrderConfirmation(props: { searchParams: Promise<{ order?: string }> }) {
+  const searchParams = await props.searchParams;
   const id = searchParams.order ?? "";
   const valid = /^[0-9a-f-]{36}$/i.test(id) && isSupabaseConfigured() && process.env.SUPABASE_SERVICE_ROLE_KEY;
   const { data: order } = valid
