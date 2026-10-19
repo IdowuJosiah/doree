@@ -40,7 +40,7 @@ export function Header({ announcement = "" }: { announcement?: string }) {
         <div className="container-page relative flex h-full items-center justify-between">
           <button
             type="button"
-            className="-ml-3 flex h-11 w-11 items-center justify-center lg:hidden"
+            className="-ml-3 flex h-11 w-11 items-center justify-center xl:hidden"
             aria-label="Open menu"
             aria-expanded={open}
             onClick={() => setOpen(true)}
@@ -50,7 +50,7 @@ export function Header({ announcement = "" }: { announcement?: string }) {
             </svg>
           </button>
 
-          <nav aria-label="Primary" className="hidden items-center gap-8 lg:flex">
+          <nav aria-label="Primary" className="hidden items-center gap-5 xl:flex">
             {navLinks.map((l) => (
               <Link key={l.href} href={l.href} className="label hover:text-gold-text">
                 {l.label}

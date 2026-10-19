@@ -78,8 +78,8 @@ export async function saveProduct(id: string, fd: FormData) {
   const { error } = await db.from("products").update(values).eq("id", id);
   if (error) fail(path, error.code === "23505" ? "That slug is already used." : error.message);
 
-  // Sync collection membership.
-  const wanted = new Set(fd.getAll("collections").map(String));
+  // Sync membership: one category (product type) plus any named collections.
+  const wanted = new Set([...fd.getAll("collections").map(String), str(fd, "category")].filter(Boolean));
   const { data: current } = await db.from("collection_products").select("collection_id, sort_order").eq("product_id", id);
   const have = new Set((current ?? []).map((c) => c.collection_id as string));
   const remove = [...have].filter((c) => !wanted.has(c));

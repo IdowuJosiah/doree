@@ -10,6 +10,7 @@ export const siteConfig = {
 
 export const navLinks = [
   { href: "/shop", label: "Shop" },
+  { href: "/collections", label: "Collections" },
   { href: "/lookbook", label: "Lookbook" },
   { href: "/guides", label: "Care and guides" },
   { href: "/about", label: "About" },

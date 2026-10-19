@@ -13,7 +13,7 @@ npm run dev
 ### Database
 
 1. Create a Supabase project.
-2. In the Supabase SQL editor, open a new query tab and run `supabase/migrations/0001_init.sql`, then, in another new tab, `supabase/seed.sql` (sample products, collections, and placeholder shipping fees). Copy each file whole: on GitHub open the file, click **Raw**, select all and copy. Make sure nothing is highlighted in the editor before pressing Run, or only the highlighted part runs. Then run `supabase/migrations/0002_best_sellers_and_signups.sql` `supabase/migrations/0003_contact_messages.sql` and `supabase/migrations/0004_brand_tagline.sql` and `supabase/migrations/0005_function_hardening.sql` the same way. All of these files are safe to run again. Before Dorée adds her own products, run `supabase/cleanup_sample_data.sql` once to remove the sample products and test orders; do not run `seed.sql` on the live shop again.
+2. In the Supabase SQL editor, open a new query tab and run `supabase/migrations/0001_init.sql`, then, in another new tab, `supabase/seed.sql` (sample products, collections, and placeholder shipping fees). Copy each file whole: on GitHub open the file, click **Raw**, select all and copy. Make sure nothing is highlighted in the editor before pressing Run, or only the highlighted part runs. Then run `supabase/migrations/0002_best_sellers_and_signups.sql` `supabase/migrations/0003_contact_messages.sql` and `supabase/migrations/0004_brand_tagline.sql` and `supabase/migrations/0005_function_hardening.sql` and `supabase/migrations/0006_categories_and_collections.sql` the same way. All of these files are safe to run again. Before Dorée adds her own products, run `supabase/cleanup_sample_data.sql` once to remove the sample products and test orders; do not run `seed.sql` on the live shop again.
 3. Create the admin user in Supabase Auth, then give them the admin role. The role lives in `app_metadata`, which users cannot edit themselves:
 
 ```sql
@@ -28,7 +28,8 @@ They sign in at `/admin/login`, the admin's own sign-in page (customers use `/lo
 
 | What | Where |
 | --- | --- |
-| Products, variants, images, collections | Database, edited in `/admin/products` and `/admin/collections` |
+| Products, variants, images | Database, edited in `/admin/products` |
+| Categories (product types: Earrings, Necklaces…, shown at `/shop/<slug>`) and collections (named sets such as Soleil, shown at `/collections/<slug>`) | Database (`collections` table, `kind` column), edited in `/admin/categories` and `/admin/collections` |
 | Stock levels across all products, low and out-of-stock alerts | `/admin/inventory` |
 | Orders and their status | Database, `/admin/orders` |
 | Shipping fixed-fee states and amounts | Database, `/admin/shipping` (nothing is hard-coded) |

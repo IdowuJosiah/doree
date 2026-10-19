@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddToBag } from "@/components/product/AddToBag";
 import { Gallery } from "@/components/product/Gallery";
 import { ProductCard } from "@/components/ProductCard";
 import { Reveal } from "@/components/Reveal";
-import { getProductBySlug, listProducts } from "@/lib/data/catalog";
+import { getProductBySlug, listCollectionsForProduct, listProducts } from "@/lib/data/catalog";
 import { formatPrice } from "@/lib/format";
 import { siteConfig } from "@/lib/config";
 
@@ -40,7 +41,8 @@ export default async function ProductPage(props: Props) {
   const params = await props.params;
   const product = await getProductBySlug(params.slug);
   if (!product) notFound();
-  const related = (await listProducts()).filter((p) => p.id !== product.id && !p.soldOut).slice(0, 4);
+  const [all, inCollections] = await Promise.all([listProducts(), listCollectionsForProduct(product.id)]);
+  const related = all.filter((p) => p.id !== product.id && !p.soldOut).slice(0, 4);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -61,6 +63,16 @@ export default async function ProductPage(props: Props) {
       <section className="container-page grid gap-10 pb-28 pt-8 lg:grid-cols-2 lg:gap-16 lg:py-16">
         <Gallery images={product.images} name={product.name} />
         <div className="lg:sticky lg:top-28 lg:self-start">
+          {inCollections.length > 0 && (
+            <p className="label mb-3 text-gold-text">
+              {inCollections.map((c, i) => (
+                <span key={c.slug}>
+                  {i > 0 && " · "}
+                  <Link href={`/collections/${c.slug}`} className="hover:underline">The {c.name} collection</Link>
+                </span>
+              ))}
+            </p>
+          )}
           <h1 className="font-display text-4xl lg:text-5xl">{product.name}</h1>
           <p className="mt-3 text-lg">{product.soldOut ? "Sold out" : formatPrice(product.price)}</p>
           {product.description && <p className="mt-6 max-w-prose">{product.description}</p>}

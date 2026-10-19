@@ -48,7 +48,7 @@ export default async function OrderPage(props: { params: Promise<{ id: string }>
         </table>
       </Card>
 
-      <div className="grid gap-x-8 md:grid-cols-2">
+      <div className="grid gap-x-8 lg:grid-cols-2">
         <Card title="Customer">
           <p>{o.name}</p>
           <p><a href={`mailto:${o.email}`} className="text-link">{o.email}</a></p>

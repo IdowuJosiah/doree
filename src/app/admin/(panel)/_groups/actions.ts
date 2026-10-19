@@ -3,25 +3,34 @@
 import { redirect } from "next/navigation";
 import { adminDb } from "@/lib/auth";
 import { fail, refreshPublic, saved, slugify, storagePath, str } from "../_lib";
+import { isKind, KINDS, type GroupKind } from "./kinds";
 
-export async function createCollection(fd: FormData) {
+const base = (kind: GroupKind) => KINDS[isKind(kind) ? kind : "collection"].path;
+
+export async function createGroup(kind: GroupKind, fd: FormData) {
   const db = await adminDb();
   const name = str(fd, "name");
-  if (!name) fail("/admin/collections", "Name is required.");
-  const { data: last } = await db.from("collections").select("sort_order").order("sort_order", { ascending: false }).limit(1).maybeSingle();
+  if (!name) fail(base(kind), "Name is required.");
+  const { data: last } = await db
+    .from("collections")
+    .select("sort_order")
+    .eq("kind", kind)
+    .order("sort_order", { ascending: false })
+    .limit(1)
+    .maybeSingle();
   const { data, error } = await db
     .from("collections")
-    .insert({ name, slug: slugify(str(fd, "slug") || name), sort_order: (last?.sort_order ?? 0) + 1 })
+    .insert({ kind, name, slug: slugify(str(fd, "slug") || name), sort_order: (last?.sort_order ?? 0) + 1 })
     .select("id")
     .single();
-  if (error) fail("/admin/collections", error.code === "23505" ? "That slug is already used." : error.message);
+  if (error) fail(base(kind), error.code === "23505" ? "That name or web address is already used." : error.message);
   refreshPublic();
-  redirect(`/admin/collections/${data.id}?saved=1`);
+  redirect(`${base(kind)}/${data.id}?saved=1`);
 }
 
-export async function saveCollection(id: string, fd: FormData) {
+export async function saveGroup(kind: GroupKind, id: string, fd: FormData) {
   const db = await adminDb();
-  const path = `/admin/collections/${id}`;
+  const path = `${base(kind)}/${id}`;
   const name = str(fd, "name");
   if (!name) fail(path, "Name is required.");
   const { error } = await db
@@ -32,21 +41,22 @@ export async function saveCollection(id: string, fd: FormData) {
       intro: str(fd, "intro"),
       sort_order: parseInt(str(fd, "sort_order") || "0", 10) || 0,
     })
-    .eq("id", id);
-  if (error) fail(path, error.code === "23505" ? "That slug is already used." : error.message);
+    .eq("id", id)
+    .eq("kind", kind);
+  if (error) fail(path, error.code === "23505" ? "That web address is already used." : error.message);
   refreshPublic();
   saved(path);
 }
 
-export async function deleteCollection(id: string) {
+export async function deleteGroup(kind: GroupKind, id: string) {
   const db = await adminDb();
-  const { error } = await db.from("collections").delete().eq("id", id);
-  if (error) fail(`/admin/collections/${id}`, error.message);
+  const { error } = await db.from("collections").delete().eq("id", id).eq("kind", kind);
+  if (error) fail(`${base(kind)}/${id}`, error.message);
   refreshPublic();
-  redirect("/admin/collections");
+  redirect(base(kind));
 }
 
-export async function setBanner(id: string, urls: string[]) {
+export async function setGroupBanner(id: string, urls: string[]) {
   const db = await adminDb();
   const { data: old } = await db.from("collections").select("banner_url").eq("id", id).maybeSingle();
   const { error } = await db.from("collections").update({ banner_url: urls[0] }).eq("id", id);
@@ -56,17 +66,23 @@ export async function setBanner(id: string, urls: string[]) {
   refreshPublic();
 }
 
-export async function clearBanner(id: string) {
+export async function clearGroupBanner(kind: GroupKind, id: string) {
   const db = await adminDb();
   await db.from("collections").update({ banner_url: null }).eq("id", id);
   refreshPublic();
-  saved(`/admin/collections/${id}`);
+  saved(`${base(kind)}/${id}`);
 }
 
-export async function addProductToCollection(id: string, fd: FormData) {
+export async function addProductToGroup(kind: GroupKind, id: string, fd: FormData) {
   const db = await adminDb();
   const productId = str(fd, "product_id");
   if (productId) {
+    // A product has one category, so adding it here moves it out of any other.
+    if (kind === "category") {
+      const { data: others } = await db.from("collections").select("id").eq("kind", "category").neq("id", id);
+      const ids = (others ?? []).map((c) => c.id as string);
+      if (ids.length) await db.from("collection_products").delete().eq("product_id", productId).in("collection_id", ids);
+    }
     const { data: last } = await db
       .from("collection_products")
       .select("sort_order")
@@ -77,17 +93,17 @@ export async function addProductToCollection(id: string, fd: FormData) {
     await db.from("collection_products").insert({ collection_id: id, product_id: productId, sort_order: (last?.sort_order ?? 0) + 1 });
   }
   refreshPublic();
-  saved(`/admin/collections/${id}`);
+  saved(`${base(kind)}/${id}`);
 }
 
-export async function removeProductFromCollection(id: string, productId: string) {
+export async function removeProductFromGroup(kind: GroupKind, id: string, productId: string) {
   const db = await adminDb();
   await db.from("collection_products").delete().eq("collection_id", id).eq("product_id", productId);
   refreshPublic();
-  saved(`/admin/collections/${id}`);
+  saved(`${base(kind)}/${id}`);
 }
 
-export async function moveProduct(id: string, productId: string, direction: "up" | "down") {
+export async function moveGroupProduct(kind: GroupKind, id: string, productId: string, direction: "up" | "down") {
   const db = await adminDb();
   const { data } = await db.from("collection_products").select("product_id").eq("collection_id", id).order("sort_order");
   const ids = (data ?? []).map((r) => r.product_id as string);
@@ -98,5 +114,5 @@ export async function moveProduct(id: string, productId: string, direction: "up"
     await Promise.all(ids.map((pid, order) => db.from("collection_products").update({ sort_order: order }).eq("collection_id", id).eq("product_id", pid)));
   }
   refreshPublic();
-  redirect(`/admin/collections/${id}`);
+  redirect(`${base(kind)}/${id}`);
 }

@@ -35,7 +35,7 @@ export default async function ContentPage(props: { searchParams: Promise<{ error
   const db = await adminDb();
   const [{ data }, { data: collections }] = await Promise.all([
     db.from("site_content").select("key, value"),
-    db.from("collections").select("id, name").order("sort_order"),
+    db.from("collections").select("id, name").eq("kind", "category").order("sort_order"),
   ]);
   const rows = new Map((data ?? []).map((r) => [r.key as string, r.value as Block]));
   const get = (key: keyof typeof contentDefaults): Block => ({ ...(contentDefaults[key] as unknown as Block), ...(rows.get(key) ?? {}) });
@@ -116,7 +116,7 @@ export default async function ContentPage(props: { searchParams: Promise<{ error
 
       <Card
         title="Home catalog covers"
-        hint="The photos in the Catalog section of the home page, one per collection. They are tall portrait shapes, so use portrait photos (not the wide collection banners). Click a photo to choose the part the shape keeps in view. Only the first five collections appear on the home page."
+        hint="The photos in the Catalog section of the home page, one per category (Earrings, Necklaces…). They are tall portrait shapes, so use portrait photos (not the wide banners). Click a photo to choose the part the shape keeps in view. Only the first five categories appear on the home page."
       >
         <ul className="space-y-8">
           {(collections ?? []).map((c, i) => {
@@ -145,7 +145,7 @@ export default async function ContentPage(props: { searchParams: Promise<{ error
             );
           })}
         </ul>
-        {(collections ?? []).length === 0 && <p className="text-sm">Create collections first, under Collections.</p>}
+        {(collections ?? []).length === 0 && <p className="text-sm">Create categories first, under Categories.</p>}
       </Card>
 
       <Card title="Lookbook photos" hint="Each photo needs alt text and can link to a product by its slug.">

@@ -24,6 +24,9 @@ export type Product = {
   soldOut: boolean;
 };
 
+/** "category" = a product type (Earrings…), "collection" = a named set (Soleil…). */
+export type GroupKind = "category" | "collection";
+
 export type Collection = {
   id: string;
   name: string;
@@ -131,24 +134,44 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
   return data ? toProduct(data) : null;
 }
 
-export async function listCollections(): Promise<Collection[]> {
+/** Product types by default; pass "collection" for named collections. */
+export async function listCollections(kind: GroupKind = "category"): Promise<Collection[]> {
   const db = publicClient();
   if (!db) return [];
   const { data, error } = await db
     .from("collections")
     .select("id, name, slug, banner_url, intro")
+    .eq("kind", kind)
     .order("sort_order");
   if (error) return onReadError(error, [], "collections");
   return (data ?? []).map((c) => ({ id: c.id, name: c.name, slug: c.slug, bannerUrl: c.banner_url, intro: c.intro }));
 }
 
-export async function getCollectionWithProducts(slug: string) {
+/** The named collections a product belongs to, for links on its page. */
+export async function listCollectionsForProduct(productId: string): Promise<Pick<Collection, "name" | "slug">[]> {
+  const db = publicClient();
+  if (!db) return [];
+  const { data, error } = await db
+    .from("collection_products")
+    .select("collections!inner(name, slug, kind, sort_order)")
+    .eq("product_id", productId)
+    .eq("collections.kind", "collection")
+    .returns<{ collections: { name: string; slug: string; sort_order: number } }[]>();
+  if (error) return onReadError(error, [], "product collections");
+  return (data ?? [])
+    .map((r) => r.collections)
+    .sort((a, b) => a.sort_order - b.sort_order)
+    .map(({ name, slug }) => ({ name, slug }));
+}
+
+export async function getCollectionWithProducts(slug: string, kind: GroupKind = "category") {
   const db = publicClient();
   if (!db) return null;
   const { data: c, error } = await db
     .from("collections")
     .select("id, name, slug, banner_url, intro")
     .eq("slug", slug)
+    .eq("kind", kind)
     .maybeSingle();
   if (error) return onReadError(error, null, "collection");
   if (!c) return null;

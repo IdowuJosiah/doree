@@ -20,10 +20,13 @@ export default async function EditProductPage(props: { params: Promise<{ id: str
   const [{ data: variants }, { data: images }, { data: collections }, { data: member }] = await Promise.all([
     db.from("product_variants").select("id, label, stock, sku").eq("product_id", p.id).order("label"),
     db.from("product_images").select("id, url, alt, object_position, sort_order").eq("product_id", p.id).order("sort_order"),
-    db.from("collections").select("id, name").order("sort_order"),
+    db.from("collections").select("id, name, kind").order("sort_order"),
     db.from("collection_products").select("collection_id").eq("product_id", p.id),
   ]);
-  const inCollections = new Set((member ?? []).map((m) => m.collection_id as string));
+  const inGroups = new Set((member ?? []).map((m) => m.collection_id as string));
+  const categories = (collections ?? []).filter((c) => c.kind === "category");
+  const named = (collections ?? []).filter((c) => c.kind === "collection");
+  const currentCategory = categories.find((c) => inGroups.has(c.id))?.id ?? "";
 
   return (
     <>
@@ -58,14 +61,27 @@ export default async function EditProductPage(props: { params: Promise<{ id: str
           <TextArea label="Description" name="description" defaultValue={p.description} />
           <TextArea label="Materials" name="materials" defaultValue={p.materials} rows={2} />
           <TextArea label="Care" name="care" defaultValue={p.care} rows={2} />
+          <div>
+            <label htmlFor="category" className="label mb-1 block">Category</label>
+            <select id="category" name="category" defaultValue={currentCategory} className="field !h-10 !w-auto">
+              <option value="">None</option>
+              {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+            <p className="mt-1 text-xs opacity-70">The type of piece. Shoppers filter by this on the Shop page.</p>
+          </div>
           <fieldset>
             <legend className="label mb-1">Collections</legend>
-            {(collections ?? []).map((c) => (
+            {named.map((c) => (
               <label key={c.id} className="flex min-h-[44px] items-center gap-3">
-                <input type="checkbox" name="collections" value={c.id} defaultChecked={inCollections.has(c.id)} className="h-4 w-4 accent-[var(--gold-text)]" />
+                <input type="checkbox" name="collections" value={c.id} defaultChecked={inGroups.has(c.id)} className="h-4 w-4 accent-[var(--gold-text)]" />
                 {c.name}
               </label>
             ))}
+            {named.length === 0 ? (
+              <p className="text-sm opacity-70">No collections yet. Create one under <Link href="/admin/collections" className="text-link">Collections</Link>.</p>
+            ) : (
+              <p className="mt-1 text-xs opacity-70">Named sets this piece belongs to, such as a seasonal launch. Optional, and it can be in more than one.</p>
+            )}
           </fieldset>
           <Check label="Sold out" name="sold_out" defaultChecked={p.sold_out} />
           <Check label="Best seller (shown on the home page, up to four)" name="best_seller" defaultChecked={p.best_seller} />
@@ -73,14 +89,14 @@ export default async function EditProductPage(props: { params: Promise<{ id: str
         </form>
       </Card>
 
-      <Card title="Variants and stock" hint="Stock drops automatically when an order is paid. A product needs at least one variant to be bought; use “One size” if it has no options.">
+      <Card title="Variants and stock" hint="Stock drops automatically when an order is paid. A product needs at least one variant to be bought; use “One size” if it has no options. SKU is an optional stock code of your own for each size; customers never see it.">
         <div className="space-y-3">
           {(variants ?? []).map((v) => (
             <div key={v.id} className="flex flex-wrap items-end gap-3">
               <form action={saveVariant.bind(null, p.id, v.id)} className="flex flex-wrap items-end gap-3">
                 <Field label="Label" name="label" defaultValue={v.label} required />
                 <Field label="Stock" name="stock" type="number" defaultValue={v.stock} />
-                <Field label="SKU" name="sku" defaultValue={v.sku ?? ""} />
+                <Field label="SKU (optional)" name="sku" defaultValue={v.sku ?? ""} />
                 <Small>Save</Small>
               </form>
               <form action={deleteVariant.bind(null, p.id, v.id)}><Small danger>Delete</Small></form>
@@ -90,7 +106,7 @@ export default async function EditProductPage(props: { params: Promise<{ id: str
         <form action={addVariant.bind(null, p.id)} className="mt-6 flex flex-wrap items-end gap-3 border-t border-line pt-6">
           <Field label="New variant" name="label" required />
           <Field label="Stock" name="stock" type="number" defaultValue={0} />
-          <Field label="SKU" name="sku" />
+          <Field label="SKU (optional)" name="sku" hint="Your own stock code, e.g. SOL-HOOP-18. Leave blank if you don’t use one." />
           <Small>Add variant</Small>
         </form>
       </Card>

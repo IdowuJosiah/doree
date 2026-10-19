@@ -8,6 +8,7 @@ export const revalidate = 3600;
 const STATIC = [
   "",
   "/shop",
+  "/collections",
   "/lookbook",
   "/about",
   "/contact",
@@ -28,7 +29,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Row-level security limits the anonymous client to published products.
   const [collections, products] = await Promise.all([
-    db.from("collections").select("slug").order("sort_order"),
+    db.from("collections").select("slug, kind").order("sort_order"),
     db.from("products").select("slug, created_at").order("created_at", { ascending: false }),
   ]);
   const c = collections.error ? onReadError(collections.error, [], "collections") : collections.data ?? [];
@@ -36,7 +37,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...entries,
-    ...c.map((x: { slug: string }) => ({ url: `${SITE_URL}/shop/${x.slug}` })),
+    ...c.map((x: { slug: string; kind: string }) => ({ url: `${SITE_URL}${x.kind === "collection" ? "/collections" : "/shop"}/${x.slug}` })),
     ...p.map((x: { slug: string; created_at: string }) => ({ url: `${SITE_URL}/product/${x.slug}`, lastModified: x.created_at })),
   ];
 }
