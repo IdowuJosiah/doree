@@ -42,16 +42,19 @@ export async function GroupEditor({ kind, id, searchParams }: { kind: GroupKind;
         </form>
       </Card>
 
-      <Card title="Banner image" hint={`Shown full width at the top of the ${k.singular} page, as tall as the home page hero. A wide landscape photo works best.`}>
-        {c.banner_url && (
-          <div className="mb-4 flex items-end gap-4">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={c.banner_url} alt="" className="max-h-40 w-auto" />
-            <form action={clearGroupBanner.bind(null, kind, c.id)}><Small danger>Remove</Small></form>
-          </div>
-        )}
-        <ImageUploader folder={`collections/${c.id}`} onUploaded={setGroupBanner.bind(null, c.id)} label={c.banner_url ? "Replace banner" : "Upload banner"} />
-      </Card>
+      {/* Category pages have no banner; only collections show one. */}
+      {kind === "collection" && (
+        <Card title="Banner image" hint={`Shown full width at the top of the ${k.singular} page, as tall as the home page hero. A wide landscape photo works best.`}>
+          {c.banner_url && (
+            <div className="mb-4 flex items-end gap-4">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={c.banner_url} alt="" className="max-h-40 w-auto" />
+              <form action={clearGroupBanner.bind(null, kind, c.id)}><Small danger>Remove</Small></form>
+            </div>
+          )}
+          <ImageUploader folder={`collections/${c.id}`} onUploaded={setGroupBanner.bind(null, c.id)} label={c.banner_url ? "Replace banner" : "Upload banner"} />
+        </Card>
+      )}
 
       <Card
         title="Products and their order"
