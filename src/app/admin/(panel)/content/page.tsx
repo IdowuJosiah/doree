@@ -116,12 +116,13 @@ export default async function ContentPage(props: { searchParams: Promise<{ error
 
       <Card
         title="Home catalog covers"
-        hint="The photos in the Catalog section of the home page, one per category (Earrings, Necklaces…). They are tall portrait shapes, so use portrait photos (not the wide banners). Click a photo to choose the part the shape keeps in view. Only the first five categories appear on the home page."
+        hint="The photos in the Catalog section of the home page, one per category (Earrings, Necklaces…). They are tall portrait shapes, so use portrait photos (not the wide banners). Drag a photo in its preview to move it and use Zoom to scale it, then press Save framing. Only the first five categories appear on the home page."
       >
         <ul className="space-y-8">
           {(collections ?? []).map((c, i) => {
             const cover = coverMap[c.id];
             const shape = ["Rectangle", "Arch", "Arch", "Quarter arch", "Rectangle"][i];
+            const frame = (["rect", "arch", "arch", "quarter", "rect"] as const)[i] ?? "rect";
             return (
               <li key={c.id} className="border-b border-line pb-8">
                 <p className="font-display text-xl">
@@ -130,8 +131,8 @@ export default async function ContentPage(props: { searchParams: Promise<{ error
                 {cover ? (
                   <>
                     <form action={saveCatalogFocus.bind(null, c.id)} className="mt-3 space-y-3">
-                      <FocusPicker src={cover.url} initial={cover.position ?? "center"} />
-                      <Small>Save focus point</Small>
+                      <FocusPicker src={cover.url} initial={cover.position ?? "center"} shape={frame} />
+                      <Small>Save framing</Small>
                     </form>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <ImageUploader folder="catalog" onUploaded={setCatalogCover.bind(null, c.id)} label="Replace photo" />

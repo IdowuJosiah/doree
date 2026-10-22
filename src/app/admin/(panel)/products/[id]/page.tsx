@@ -111,7 +111,7 @@ export default async function EditProductPage(props: { params: Promise<{ id: str
         </form>
       </Card>
 
-      <Card title="Images" hint="The first image is the main photo. Every image needs alt text. Click a photo to set the focus point the arch crop keeps in view. Originals are kept; the site serves resized copies.">
+      <Card title="Images" hint="The first image is the main photo. Every image needs alt text. Drag a photo in its preview to move it and use Zoom to scale it, then press Save image. Originals are kept; the site serves resized copies.">
         <ul className="space-y-8">
           {(images ?? []).map((img, i) => (
             <li key={img.id} className="border-b border-line pb-8">

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { ProductImage } from "@/lib/data/catalog";
+import { framingStyle } from "@/lib/framing";
 
 export type Shape = "arch" | "quarter" | "quarter-mirror" | "rect";
 
@@ -21,7 +22,7 @@ export function Shaped({ image, shape, priority, sizes = "(min-width: 1024px) 33
           fill
           priority={priority}
           sizes={sizes}
-          style={{ objectFit: "cover", objectPosition: image.objectPosition ?? "center" }}
+          style={framingStyle(image.objectPosition)}
         />
       ) : (
         <div className="placeholder flex items-end justify-center bg-cream-deep pb-6" role="img" aria-label={image.alt}>

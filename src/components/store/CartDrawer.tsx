@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { framingStyle } from "@/lib/framing";
 import { useEffect, useRef } from "react";
 import { formatPrice } from "@/lib/format";
 import { MAX_QUANTITY_PER_LINE } from "@/lib/pricing";
@@ -50,7 +51,7 @@ export function CartDrawer() {
                 <li key={i.variantId} className="flex gap-4 py-5">
                   <div className="relative h-24 w-[4.5rem] shrink-0 overflow-hidden bg-cream-deep" style={{ borderRadius: "9999px 9999px 0 0" }}>
                     {i.image?.src && (
-                      <Image src={i.image.src} alt={i.image.alt} fill sizes="72px" className="object-cover" style={{ objectPosition: i.image.objectPosition ?? "center" }} />
+                      <Image src={i.image.src} alt={i.image.alt} fill sizes="72px" style={framingStyle(i.image.objectPosition)} />
                     )}
                   </div>
                   <div className="flex flex-1 flex-col">

@@ -115,7 +115,8 @@
 }
 .zoom:hover .shape img,
 .zoom:hover .shape .placeholder {
-  transform: scale(1.03);
+  /* --zoom is the photo's own zoom, set in the admin. */
+  transform: scale(calc(var(--zoom, 1) * 1.03)) !important;
 }
 
 /* Fade-up on scroll, once per element. */
@@ -141,6 +142,6 @@
   }
   .zoom:hover .shape img,
   .zoom:hover .shape .placeholder {
-    transform: none;
+    transform: scale(var(--zoom, 1)) !important;
   }
 }
