@@ -63,6 +63,12 @@ export function Header({ announcement = "" }: { announcement?: string }) {
           </Link>
 
           <div className="flex items-center gap-1 lg:gap-4">
+            <Link href="/search" aria-label="Search" className="flex h-11 w-11 items-center justify-center hover:text-gold-text">
+              <svg {...icon} aria-hidden="true">
+                <circle cx="11" cy="11" r="6.5" />
+                <path d="M16 16l4.5 4.5" />
+              </svg>
+            </Link>
             <Link href="/account/wishlist" aria-label="Wishlist" className="hidden h-11 w-11 items-center justify-center hover:text-gold-text lg:flex">
               <svg {...icon} aria-hidden="true">
                 <path d="M12 21s-8-5-8-11a4.5 4.5 0 018-2.8A4.5 4.5 0 0120 10c0 6-8 11-8 11z" />

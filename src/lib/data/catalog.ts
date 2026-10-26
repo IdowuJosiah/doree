@@ -188,3 +188,63 @@ export async function getCollectionWithProducts(slug: string, kind: GroupKind = 
   const products = (links ?? []).flatMap((l) => (l.products ? [toProduct(l.products)] : []));
   return { collection, products };
 }
+
+/**
+ * Words to search for: lower case, letters and numbers only (so they are safe
+ * inside a database pattern), at most five.
+ */
+export function searchTerms(q: string): string[] {
+  return q
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s-]/gu, " ")
+    .split(/\s+/)
+    .map((w) => w.replace(/^-+|-+$/g, ""))
+    .filter((w) => w.length > 1)
+    .slice(0, 5);
+}
+
+/**
+ * Published products where every word starts a word in the name,
+ * description or materials, plus the products in any category or collection
+ * whose name matches. Name matches come first.
+ */
+export async function searchCatalog(q: string): Promise<{ products: Product[]; groups: (Collection & { kind: GroupKind })[] }> {
+  const words = searchTerms(q);
+  const db = publicClient();
+  if (!db || words.length === 0) return { products: [], groups: [] };
+  // "w*" or "* w*" matches a word that starts with w, so "ring" finds "Rings"
+  // but not "Earrings". (* is the database's any-characters wildcard.)
+  const startsWord = (field: string, w: string) => `${field}.ilike.${w}*,${field}.ilike.* ${w}*`;
+
+  let productQuery = db.from("products").select(PRODUCT_COLUMNS);
+  for (const w of words) {
+    productQuery = productQuery.or(["name", "description", "materials"].map((f) => startsWord(f, w)).join(","));
+  }
+  let groupQuery = db.from("collections").select("id, name, slug, kind, banner_url, intro").order("sort_order");
+  for (const w of words) groupQuery = groupQuery.or(startsWord("name", w));
+
+  const [{ data: rows, error }, { data: groupRows, error: groupError }] = await Promise.all([
+    productQuery.limit(60).returns<ProductRow[]>(),
+    groupQuery,
+  ]);
+  if (error) return onReadError(error, { products: [], groups: [] }, "search");
+  if (groupError) return onReadError(groupError, { products: [], groups: [] }, "search");
+
+  const groups = (groupRows ?? []).map((c) => ({ id: c.id, name: c.name, slug: c.slug, kind: c.kind as GroupKind, bannerUrl: c.banner_url, intro: c.intro }));
+  let inGroups: ProductRow[] = [];
+  if (groups.length) {
+    const { data: links } = await db
+      .from("collection_products")
+      .select(`products(${PRODUCT_COLUMNS})`)
+      .in("collection_id", groups.map((g) => g.id))
+      .returns<{ products: ProductRow | null }[]>();
+    inGroups = (links ?? []).flatMap((l) => (l.products ? [l.products] : []));
+  }
+
+  const byName = (r: ProductRow) => words.every((w) => ` ${r.name.toLowerCase()}`.includes(` ${w}`));
+  const seen = new Set<string>();
+  const products = [...(rows ?? []).filter(byName), ...(rows ?? []), ...inGroups]
+    .filter((r) => (seen.has(r.id) ? false : (seen.add(r.id), true)))
+    .map(toProduct);
+  return { products, groups };
+}
