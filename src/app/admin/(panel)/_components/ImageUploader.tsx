@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { createBrowserSupabase } from "@/lib/supabase/browser";
 import { looksLikeImage, webVersion } from "./prepare-image";
 
@@ -30,11 +30,46 @@ export function ImageUploader({
   const [, startTransition] = useTransition();
   // Some browsers fire "input", some "change", some both: handle each pick once.
   const lastPick = useRef<FileList | null>(null);
+  const input = useRef<HTMLInputElement>(null);
+  // Safari exports photos picked from the Photos library (downloading them
+  // from iCloud if needed) before handing them over, which can take a while
+  // with nothing on screen. "waiting" covers that gap.
+  const [waiting, setWaiting] = useState<false | "short" | "long">(false);
+  const opened = useRef(false);
+
+  useEffect(() => {
+    const el = input.current;
+    const stop = () => {
+      opened.current = false;
+      setWaiting(false);
+    };
+    // The dialog has closed when the window gets focus back.
+    const onFocus = () => {
+      if (!opened.current) return;
+      setTimeout(() => {
+        if (opened.current) setWaiting("short");
+      }, 600);
+    };
+    window.addEventListener("focus", onFocus);
+    el?.addEventListener("cancel", stop);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      el?.removeEventListener("cancel", stop);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (waiting !== "short") return;
+    const t = setTimeout(() => setWaiting("long"), 15000);
+    return () => clearTimeout(t);
+  }, [waiting]);
 
   function pick(input: HTMLInputElement) {
     const files = input.files;
     if (!files?.length || files === lastPick.current) return;
     lastPick.current = files;
+    opened.current = false;
+    setWaiting(false);
     const list = Array.from(files); // copy before the input is cleared
     input.value = "";
     void handle(list);
@@ -102,18 +137,32 @@ export function ImageUploader({
           void handle(Array.from(e.dataTransfer.files));
         }}
       >
-        <span className="label">{busy ? status || "Working…" : label}</span>
-        {!busy && <span className="text-xs opacity-70">Click to choose {multiple ? "photos" : "a photo"}, or drag {multiple ? "them" : "it"} here</span>}
+        <span className="label">{busy ? status || "Working…" : waiting ? "Getting your photos…" : label}</span>
+        {!busy && !waiting && <span className="text-xs opacity-70">Click to choose {multiple ? "photos" : "a photo"}, or drag {multiple ? "them" : "it"} here</span>}
+        {!busy && waiting && (
+          <span className="text-xs opacity-70">Photos from the Photos library can take a few seconds to arrive, longer if they are stored in iCloud.</span>
+        )}
         <input
+          ref={input}
           type="file"
           accept="image/*,.heic,.heif"
           multiple={multiple}
           disabled={busy}
           className="sr-only"
+          onClick={() => {
+            opened.current = true;
+            setWaiting(false);
+          }}
           onChange={(e) => pick(e.currentTarget)}
           onInput={(e) => pick(e.currentTarget)}
         />
       </label>
+      {waiting === "long" && !busy && (
+        <div role="status" className="mt-2 text-sm">
+          <p>Still waiting for Safari to hand over the photos. If nothing happens, open the Photos app, select the photos and drag them into this box; that is usually quickest.</p>
+          <button type="button" onClick={() => { opened.current = false; setWaiting(false); }} className="text-link mt-1">Stop waiting</button>
+        </div>
+      )}
       {done && !busy && <p role="status" className="mt-2 text-sm text-gold-text">{done}</p>}
       {error && <p role="alert" className="mt-2 text-sm text-red-800">{error}</p>}
     </div>
