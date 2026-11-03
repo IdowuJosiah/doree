@@ -26,6 +26,17 @@ export type ComingSoonContent = {
   launch: string;
   image: string;
 };
+/**
+ * Pre-launch teaser. While enabled, every shop page shows only this (with an
+ * email sign-up); the admin and the policy pages still work.
+ */
+export type TeaserContent = {
+  enabled: boolean;
+  title: string;
+  script: string;
+  text: string;
+  image: string;
+};
 export type CatalogCover = { url: string; position?: string };
 export type LookbookPhoto = { url: string; alt: string; productSlug?: string };
 
@@ -36,6 +47,7 @@ export type SiteContent = {
   instagram: { handle: string; url: string };
   announcement: { text: string };
   coming_soon: ComingSoonContent;
+  teaser: TeaserContent;
   lookbook: { photos: LookbookPhoto[] };
   /** Portrait cover photo for each collection tile in the home catalog, by collection id. */
   catalog_covers: Record<string, CatalogCover>;
@@ -69,6 +81,13 @@ export const contentDefaults: SiteContent = {
     title: "The new collection",
     text: "Something new is on its way. Leave your email and be the first to know when it launches.",
     launch: "",
+    image: "",
+  },
+  teaser: {
+    enabled: true,
+    title: "Golden Hour",
+    script: "Dropping soon",
+    text: "Our Golden Hour collection is almost here. Be the first to know when it drops.",
     image: "",
   },
   lookbook: { photos: [] },

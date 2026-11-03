@@ -45,6 +45,7 @@ export default async function ContentPage(props: { searchParams: Promise<{ error
   const feature = get("feature_panel");
   const insta = get("instagram");
   const announcement = get("announcement");
+  const teaser = { ...contentDefaults.teaser, ...((rows.get("teaser") as unknown as Partial<typeof contentDefaults.teaser>) ?? {}) };
   const comingSoon = { ...contentDefaults.coming_soon, ...((rows.get("coming_soon") as unknown as Partial<typeof contentDefaults.coming_soon>) ?? {}) };
   const coverMap = (rows.get("catalog_covers") ?? {}) as unknown as Record<string, { url: string; position?: string }>;
   const lookbook = ((rows.get("lookbook") as unknown as { photos?: LookbookPhoto[] })?.photos ?? []);
@@ -53,6 +54,20 @@ export default async function ContentPage(props: { searchParams: Promise<{ error
     <>
       <h1 className="mb-6 font-display text-4xl uppercase">Site content</h1>
       <Notice searchParams={searchParams} />
+
+      <Card
+        title="Launch teaser"
+        hint="While this is on, every shop page shows only this teaser with an email sign-up, so nobody can browse or buy yet. You can still add products here in the admin. Untick it and save when you are ready to launch. Sign-ups are listed under Subscribers."
+      >
+        <form action={saveContent.bind(null, "teaser")} className="grid max-w-xl gap-4">
+          <Check label="Show the teaser instead of the shop" name="enabled" defaultChecked={teaser.enabled} />
+          <Field label="Collection name" name="title" defaultValue={teaser.title} />
+          <Field label="Script line" name="script" defaultValue={teaser.script} />
+          <TextArea label="Short text" name="text" defaultValue={teaser.text} rows={2} />
+          <div><Save /></div>
+        </form>
+        <div className="mt-6"><Image contentKey="teaser" field="image" url={teaser.image} label="Teaser photo (shown in an arch; if empty, the Coming soon photo is used)" /></div>
+      </Card>
 
       <Card title="Announcement bar" hint="One line above the header. Leave empty to hide it.">
         <form action={saveContent.bind(null, "announcement")} className="max-w-xl space-y-4">

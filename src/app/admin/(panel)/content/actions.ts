@@ -15,9 +15,10 @@ const TEXT_FIELDS: Record<string, string[]> = {
   instagram: ["handle", "url"],
   announcement: ["text"],
   coming_soon: ["script", "title", "text", "launch"],
+  teaser: ["title", "script", "text"],
 };
-const BOOL_FIELDS: Record<string, string[]> = { coming_soon: ["enabled"] };
-const IMAGE_FIELDS: Record<string, string[]> = { home_hero: ["leftImage", "rightImage"], feature_panel: ["image"], coming_soon: ["image"] };
+const BOOL_FIELDS: Record<string, string[]> = { coming_soon: ["enabled"], teaser: ["enabled"] };
+const IMAGE_FIELDS: Record<string, string[]> = { home_hero: ["leftImage", "rightImage"], feature_panel: ["image"], coming_soon: ["image"], teaser: ["image"] };
 
 type Db = Awaited<ReturnType<typeof adminDb>>;
 
