@@ -26,6 +26,7 @@ export default async function AdminPanelLayout({ children }: { children: React.R
             <Link key={n.href} href={n.href} className="flex min-h-[44px] items-center hover:text-gold-text">{n.label}</Link>
           ))}
         </nav>
+        <a href="/" target="_blank" rel="noopener" className="text-link mt-4 block text-sm lg:mt-8">View shop ↗</a>
         <form action={adminSignOut} className="mt-4 lg:mt-10">
           <p className="mb-2 break-all text-xs opacity-70">{user.email}</p>
           <button type="submit" className="text-link text-sm">Sign out</button>

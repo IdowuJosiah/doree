@@ -57,7 +57,7 @@ export default async function ContentPage(props: { searchParams: Promise<{ error
 
       <Card
         title="Launch teaser"
-        hint="While this is on, every shop page shows only this teaser with an email sign-up, so nobody can browse or buy yet. You can still add products here in the admin. Untick it and save when you are ready to launch. Sign-ups are listed under Subscribers."
+        hint="While this is on, every shop page shows only this teaser with an email sign-up, so nobody can browse or buy yet. You can still add products here in the admin, and while you are signed in as admin you see the real shop (with a preview bar) to check everything. Untick it and save when you are ready to launch. Sign-ups are listed under Subscribers."
       >
         <form action={saveContent.bind(null, "teaser")} className="grid max-w-xl gap-4">
           <Check label="Show the teaser instead of the shop" name="enabled" defaultChecked={teaser.enabled} />
