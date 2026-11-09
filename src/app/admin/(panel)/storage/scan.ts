@@ -8,20 +8,27 @@ export type StoredFile = { path: string; size: number; createdAt: string };
 /** Files uploaded in the last hour are left alone: they may be mid-upload. */
 const GRACE_MS = 60 * 60 * 1000;
 
+// Lists every file under a folder. Sub-folders are read several at a time:
+// one request per folder, one by one, was slow enough to look like a hang.
 async function listAll(db: Db, prefix = ""): Promise<StoredFile[]> {
-  const out: StoredFile[] = [];
+  const files: StoredFile[] = [];
+  const folders: string[] = [];
   for (let offset = 0; ; offset += 1000) {
     const { data, error } = await db.storage.from("media").list(prefix, { limit: 1000, offset, sortBy: { column: "name", order: "asc" } });
     if (error) throw new Error(error.message);
     for (const item of data ?? []) {
-      const path = prefix ? `${prefix}/${item.name}` : item.name;
       if (item.name.startsWith(".")) continue; // folder placeholders
-      if (item.id === null) out.push(...(await listAll(db, path))); // a folder
-      else out.push({ path, size: Number(item.metadata?.size ?? 0), createdAt: item.created_at ?? "" });
+      const path = prefix ? `${prefix}/${item.name}` : item.name;
+      if (item.id === null) folders.push(path);
+      else files.push({ path, size: Number(item.metadata?.size ?? 0), createdAt: item.created_at ?? "" });
     }
     if (!data || data.length < 1000) break;
   }
-  return out;
+  for (let i = 0; i < folders.length; i += 10) {
+    const nested = await Promise.all(folders.slice(i, i + 10).map((f) => listAll(db, f)));
+    files.push(...nested.flat());
+  }
+  return files;
 }
 
 /** Every storage path the site still points at, from all the tables that hold photos. */

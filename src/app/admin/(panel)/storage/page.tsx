@@ -2,9 +2,12 @@ import type { Metadata } from "next";
 import { adminDb } from "@/lib/auth";
 import { Card, Notice } from "../_components/ui";
 import { deleteUnusedFiles } from "./actions";
+import { DeleteButton } from "./DeleteButton";
 import { scanStorage } from "./scan";
 
 export const metadata: Metadata = { title: "Storage" };
+// Reading a large bucket can take a while.
+export const maxDuration = 60;
 
 const mb = (bytes: number) => `${(bytes / 1024 / 1024).toFixed(bytes < 10 * 1024 * 1024 ? 1 : 0)} MB`;
 
@@ -56,7 +59,7 @@ export default async function StoragePage(props: { searchParams: Promise<{ error
               <p>Nothing to clear.</p>
             ) : (
               <form action={deleteUnusedFiles}>
-                <button type="submit" className="btn-primary">Delete {scan.unused.length} unused {scan.unused.length === 1 ? "file" : "files"} ({mb(scan.unusedBytes)})</button>
+                <DeleteButton label={`Delete ${scan.unused.length} unused ${scan.unused.length === 1 ? "file" : "files"} (${mb(scan.unusedBytes)})`} />
               </form>
             )}
           </Card>
