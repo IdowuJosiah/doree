@@ -7,9 +7,10 @@ import { looksLikeImage, webVersion } from "./prepare-image";
 
 const MAX_BYTES = 25 * 1024 * 1024;
 
-// Uploads originals straight to Supabase Storage as the signed-in admin (the
-// bucket's row-level security rejects anyone else), then hands the public
-// URLs to a server action that saves them.
+// Resizes each photo in the browser, uploads it straight to Supabase Storage
+// as the signed-in admin (the bucket's row-level security rejects anyone
+// else), then hands the public URLs to a server action that saves them. Only
+// the resized copy is stored, to keep within the storage quota.
 export function ImageUploader({
   folder,
   onUploaded,
@@ -90,14 +91,10 @@ export function ImageUploader({
           if (!looksLikeImage(file)) throw new Error(`${file.name} is not an image.`);
           if (file.size > MAX_BYTES) throw new Error(`${file.name} is larger than 25 MB.`);
           const id = crypto.randomUUID();
-          const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
           setStatus(`Preparing photo${of}…`);
           const web = await webVersion(file);
 
           setStatus(`Uploading photo${of}…`);
-          // The original is kept as uploaded; the site shows the web version.
-          const original = await storage.upload(`originals/${folder}/${id}.${ext}`, file, { contentType: file.type || "application/octet-stream" });
-          if (original.error) throw new Error(`${file.name}: ${original.error.message}`);
           const path = `${folder}/${id}.jpg`;
           const { error: uploadError } = await storage.upload(path, web, { contentType: "image/jpeg", cacheControl: "31536000" });
           if (uploadError) throw new Error(`${file.name}: ${uploadError.message}`);

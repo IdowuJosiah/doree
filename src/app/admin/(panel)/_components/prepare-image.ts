@@ -2,11 +2,10 @@
 
 // Turns any photo Dorée picks into one every browser and the image resizer can
 // read: HEIC (iPhone) is converted, the picture is turned upright, and it is
-// scaled to at most MAX_EDGE pixels as a JPEG. The original file is uploaded
-// untouched alongside it.
+// scaled to at most MAX_EDGE pixels as a JPEG. Only this copy is stored.
 
-const MAX_EDGE = 2400;
-const QUALITY = 0.88;
+const MAX_EDGE = 2000;
+const QUALITY = 0.85;
 const CREAM = "#FFF8E8";
 
 const isHeic = (file: File) => /image\/hei[cf]/i.test(file.type) || /\.hei[cf]$/i.test(file.name);
