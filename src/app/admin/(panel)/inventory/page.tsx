@@ -5,6 +5,7 @@ import { formatPrice } from "@/lib/format";
 import { LOW_STOCK, stockLevel, type StockLevel } from "@/lib/inventory";
 import { Notice } from "../_components/ui";
 import { saveStock } from "./actions";
+import { LiveSearchForm } from "../_components/LiveSearchForm";
 
 export const metadata: Metadata = { title: "Inventory" };
 
@@ -78,10 +79,10 @@ export default async function InventoryPage(props: { searchParams: Promise<{ q?:
 
       <Notice searchParams={searchParams} />
 
-      <form className="mb-6 flex flex-wrap items-end gap-3" role="search">
+      <LiveSearchForm className="mb-6 flex flex-wrap items-end gap-3">
         <div>
           <label htmlFor="q" className="label mb-1 block">Search</label>
-          <input id="q" name="q" defaultValue={searchParams.q} placeholder="Product, variant or SKU" className="field !h-10" />
+          <input id="q" name="q" type="search" autoComplete="off" defaultValue={searchParams.q} placeholder="Product, variant or SKU" className="field !h-10" />
         </div>
         <div>
           <label htmlFor="show" className="label mb-1 block">Show</label>
@@ -90,7 +91,7 @@ export default async function InventoryPage(props: { searchParams: Promise<{ q?:
           </select>
         </div>
         <button type="submit" className="btn-outline !min-h-[40px] !py-2">Filter</button>
-      </form>
+      </LiveSearchForm>
 
       {rows.length === 0 ? (
         <p className="py-8">{all.length === 0 ? "No variants yet. Add them on each product’s page." : "Nothing matches this filter."}</p>

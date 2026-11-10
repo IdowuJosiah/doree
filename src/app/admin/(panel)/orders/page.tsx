@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { adminDb } from "@/lib/auth";
 import { formatPrice } from "@/lib/format";
+import { LiveSearchForm } from "../_components/LiveSearchForm";
 
 export const metadata: Metadata = { title: "Orders" };
 
@@ -20,10 +21,10 @@ export default async function OrdersPage(props: { searchParams: Promise<{ q?: st
   return (
     <>
       <h1 className="mb-6 font-display text-4xl uppercase">Orders</h1>
-      <form className="mb-6 flex flex-wrap items-end gap-3" role="search">
+      <LiveSearchForm className="mb-6 flex flex-wrap items-end gap-3">
         <div>
           <label htmlFor="q" className="label mb-1 block">Search</label>
-          <input id="q" name="q" defaultValue={searchParams.q} placeholder="Number, name or email" className="field !h-10" />
+          <input id="q" name="q" type="search" autoComplete="off" defaultValue={searchParams.q} placeholder="Number, name or email" className="field !h-10" />
         </div>
         <div>
           <label htmlFor="status" className="label mb-1 block">Status</label>
@@ -33,7 +34,7 @@ export default async function OrdersPage(props: { searchParams: Promise<{ q?: st
           </select>
         </div>
         <button type="submit" className="btn-outline !min-h-[40px] !py-2">Filter</button>
-      </form>
+      </LiveSearchForm>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[36rem] text-left text-sm">
           <thead className="label border-b border-line">

@@ -4,6 +4,7 @@ import { adminDb } from "@/lib/auth";
 import { formatPrice } from "@/lib/format";
 import { Notice, Small } from "../_components/ui";
 import { duplicateProduct, setArchived, setPublished } from "./actions";
+import { LiveSearchForm } from "../_components/LiveSearchForm";
 
 export const metadata: Metadata = { title: "Products" };
 
@@ -39,15 +40,15 @@ export default async function ProductsPage(props: { searchParams: Promise<{ q?: 
         <Link href="/admin/products/new" className="btn-primary">Add product</Link>
       </div>
       <div className="mt-6"><Notice searchParams={searchParams} /></div>
-      <form className="mb-6 flex flex-wrap items-center gap-3" role="search">
+      <LiveSearchForm className="mb-6 flex flex-wrap items-center gap-3">
         <label htmlFor="q" className="sr-only">Search products</label>
-        <input id="q" name="q" defaultValue={searchParams.q} placeholder="Search by name or slug" className="field !h-10 max-w-xs" />
+        <input id="q" name="q" type="search" autoComplete="off" defaultValue={searchParams.q} placeholder="Search by name or slug" className="field !h-10 max-w-xs" />
         {showArchived && <input type="hidden" name="archived" value="1" />}
         <button type="submit" className="btn-outline !min-h-[40px] !py-2">Search</button>
         <Link href={showArchived ? "/admin/products" : "/admin/products?archived=1"} className="text-link text-sm">
           {showArchived ? "Show active" : "Show archived"}
         </Link>
-      </form>
+      </LiveSearchForm>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[40rem] text-left text-sm">
           <thead className="label border-b border-line">
