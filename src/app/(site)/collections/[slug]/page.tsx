@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Cover } from "@/components/Cover";
+import { getSiteContent } from "@/lib/data/site";
 import { ProductGrid } from "@/components/ProductGrid";
 import { getCollectionWithProducts } from "@/lib/data/catalog";
 
@@ -16,7 +17,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 }
 
 export default async function NamedCollectionPage(props: Props) {
-  const found = await getCollectionWithProducts((await props.params).slug, "collection");
+  const [found, { banner_frames: frames }] = await Promise.all([getCollectionWithProducts((await props.params).slug, "collection"), getSiteContent()]);
   if (!found) notFound();
   const { collection, products } = found;
 
@@ -24,7 +25,7 @@ export default async function NamedCollectionPage(props: Props) {
     <>
       {/* Full-width banner, the same height as the home page hero. */}
       <div className="relative min-h-[70vh] w-full">
-        <Cover src={collection.bannerUrl ?? undefined} alt={`${collection.name} collection`} priority sizes="100vw" />
+        <Cover src={collection.bannerUrl ?? undefined} framing={frames[collection.id]} alt={`${collection.name} collection`} priority sizes="100vw" />
       </div>
       <section className="section container-page">
         <h1 className="display-xl">{collection.name}</h1>

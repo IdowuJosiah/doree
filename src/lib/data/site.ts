@@ -8,6 +8,9 @@ export type HeroContent = {
   buttonHref: string;
   leftImage: string;
   rightImage: string;
+  /** Framing for each photo, see src/lib/framing.ts. */
+  leftImageFrame?: string;
+  rightImageFrame?: string;
 };
 export type FeatureContent = {
   script: string;
@@ -16,6 +19,7 @@ export type FeatureContent = {
   buttonLabel: string;
   buttonHref: string;
   image: string;
+  imageFrame?: string;
 };
 export type ComingSoonContent = {
   enabled: boolean;
@@ -25,6 +29,7 @@ export type ComingSoonContent = {
   /** Free text such as "Launching March 2027". Empty hides it. */
   launch: string;
   image: string;
+  imageFrame?: string;
 };
 /**
  * Pre-launch teaser. While enabled, every shop page shows only this (with an
@@ -36,9 +41,10 @@ export type TeaserContent = {
   script: string;
   text: string;
   image: string;
+  imageFrame?: string;
 };
 export type CatalogCover = { url: string; position?: string };
-export type LookbookPhoto = { url: string; alt: string; productSlug?: string };
+export type LookbookPhoto = { url: string; alt: string; productSlug?: string; position?: string };
 
 export type SiteContent = {
   home_hero: HeroContent;
@@ -51,6 +57,8 @@ export type SiteContent = {
   lookbook: { photos: LookbookPhoto[] };
   /** Portrait cover photo for each collection tile in the home catalog, by collection id. */
   catalog_covers: Record<string, CatalogCover>;
+  /** Framing of each category/collection banner, by its id. */
+  banner_frames: Record<string, string>;
 };
 
 export const contentDefaults: SiteContent = {
@@ -92,6 +100,7 @@ export const contentDefaults: SiteContent = {
   },
   lookbook: { photos: [] },
   catalog_covers: {},
+  banner_frames: {},
 };
 
 // Rows in site_content override the defaults key by key.

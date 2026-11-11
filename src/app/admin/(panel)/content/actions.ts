@@ -54,6 +54,7 @@ export async function setContentImage(key: string, field: string, urls: string[]
   const value = await read(db, key);
   const old = String(value[field] ?? "");
   value[field] = urls[0];
+  value[`${field}Frame`] = ""; // a new photo starts unframed
   const { error } = await db.from("site_content").upsert({ key, value });
   if (error) throw new Error(error.message);
   const file = old && storagePath(old);
@@ -61,11 +62,31 @@ export async function setContentImage(key: string, field: string, urls: string[]
   refreshPublic();
 }
 
+/** Saves how a site photo sits in its frame (focus point and zoom). */
+export async function saveContentFrame(key: string, field: string, fd: FormData) {
+  const db = await adminDb();
+  if (!IMAGE_FIELDS[key]?.includes(field)) fail(PATH, "Unknown image field.");
+  const value = await read(db, key);
+  value[`${field}Frame`] = str(fd, "object_position");
+  await write(db, key, value);
+  saved(PATH);
+}
+
+/** Saves how a category or collection banner sits in its frame, by its id. */
+export async function saveBannerFrame(groupId: string, path: string, fd: FormData) {
+  const db = await adminDb();
+  const frames = (await read(db, "banner_frames")) as Record<string, string>;
+  frames[groupId] = str(fd, "object_position");
+  await write(db, "banner_frames", frames);
+  saved(path.startsWith("/admin/") ? path : PATH);
+}
+
 export async function clearContentImage(key: string, field: string) {
   const db = await adminDb();
   if (!IMAGE_FIELDS[key]?.includes(field)) fail(PATH, "Unknown image field.");
   const value = await read(db, key);
   value[field] = "";
+  value[`${field}Frame`] = "";
   await write(db, key, value);
   saved(PATH);
 }
@@ -88,7 +109,7 @@ export async function saveLookbookPhoto(index: number, fd: FormData) {
   if (!list[index]) fail(PATH, "Photo not found.");
   const alt = str(fd, "alt");
   if (!alt) fail(PATH, "Alt text is required for every lookbook photo.");
-  list[index] = { ...list[index], alt, productSlug: str(fd, "productSlug") || undefined };
+  list[index] = { ...list[index], alt, productSlug: str(fd, "productSlug") || undefined, position: str(fd, "object_position") || list[index].position };
   await write(db, "lookbook", { photos: list });
   saved(PATH);
 }

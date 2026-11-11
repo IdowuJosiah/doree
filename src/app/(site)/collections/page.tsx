@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Cover } from "@/components/Cover";
+import { getSiteContent } from "@/lib/data/site";
 import { Reveal } from "@/components/Reveal";
 import { listCollections } from "@/lib/data/catalog";
 
@@ -9,7 +10,7 @@ export const metadata: Metadata = { title: "Collections" };
 export const revalidate = 60;
 
 export default async function CollectionsPage() {
-  const collections = await listCollections("collection");
+  const [collections, { banner_frames: frames }] = await Promise.all([listCollections("collection"), getSiteContent()]);
   return (
     <section className="section container-page">
       <h1 className="display-xl">Collections</h1>
@@ -22,7 +23,7 @@ export default async function CollectionsPage() {
             <Reveal key={c.id}>
               <Link href={`/collections/${c.slug}`} className="zoom block">
                 <div className="relative aspect-[4/3] overflow-hidden">
-                  <Cover src={c.bannerUrl ?? undefined} alt={`${c.name} collection`} sizes="(min-width: 1024px) 50vw, 100vw" />
+                  <Cover src={c.bannerUrl ?? undefined} framing={frames[c.id]} alt={`${c.name} collection`} sizes="(min-width: 1024px) 50vw, 100vw" />
                 </div>
                 <h2 className="mt-5 font-display text-3xl">{c.name}</h2>
                 {c.intro && <p className="mt-2 max-w-md">{c.intro}</p>}

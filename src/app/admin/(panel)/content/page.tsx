@@ -4,26 +4,47 @@ import { contentDefaults, type LookbookPhoto } from "@/lib/data/site";
 import { PAGE_SLUGS } from "../_lib";
 import { Card, Check, Field, Notice, Save, Small, TextArea } from "../_components/ui";
 import { ImageUploader } from "../_components/ImageUploader";
-import { FocusPicker } from "../_components/FocusPicker";
+import { FocusPicker, type FrameShape } from "../_components/FocusPicker";
 import {
   addLookbookPhotos, clearCatalogCover, saveCatalogFocus, setCatalogCover, clearContentImage, deleteLookbookPhoto, moveLookbookPhoto,
-  saveContent, saveLookbookPhoto, savePage, setContentImage,
+  saveContent, saveContentFrame, saveLookbookPhoto, savePage, setContentImage,
 } from "./actions";
 
 export const metadata: Metadata = { title: "Site content" };
 
 type Block = Record<string, string>;
 
-function Image({ contentKey, field, url, label }: { contentKey: string; field: string; url: string; label: string }) {
+// The tile shapes the lookbook page uses, in order (src/app/(site)/lookbook/page.tsx).
+const LOOKBOOK_SHAPES: FrameShape[] = ["rect", "arch", "arch", "quarter", "rect", "quarter-mirror"];
+
+function Image({
+  contentKey,
+  field,
+  url,
+  frame,
+  label,
+  shape = "rect",
+  aspect = "3 / 4",
+}: {
+  contentKey: string;
+  field: string;
+  url: string;
+  frame?: string;
+  label: string;
+  shape?: FrameShape;
+  aspect?: string;
+}) {
   return (
     <div>
       <p className="label mb-1">{label}</p>
       {url && (
-        <div className="mb-2 flex items-end gap-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={url} alt="" className="max-h-32 w-auto" />
-          <form action={clearContentImage.bind(null, contentKey, field)}><Small danger>Remove</Small></form>
-        </div>
+        <>
+          <form action={saveContentFrame.bind(null, contentKey, field)} className="mb-3 space-y-3">
+            <FocusPicker key={url} src={url} initial={frame ?? ""} shape={shape} aspect={aspect} />
+            <Small>Save framing</Small>
+          </form>
+          <form action={clearContentImage.bind(null, contentKey, field)} className="mb-2"><Small danger>Remove photo</Small></form>
+        </>
       )}
       <ImageUploader folder="site" onUploaded={setContentImage.bind(null, contentKey, field)} label={url ? "Replace photo" : "Upload photo"} />
     </div>
@@ -66,7 +87,7 @@ export default async function ContentPage(props: { searchParams: Promise<{ error
           <TextArea label="Short text" name="text" defaultValue={teaser.text} rows={2} />
           <div><Save /></div>
         </form>
-        <div className="mt-6"><Image contentKey="teaser" field="image" url={teaser.image} label="Teaser photo (shown in an arch; if empty, the Coming soon photo is used)" /></div>
+        <div className="mt-6"><Image contentKey="teaser" field="image" url={teaser.image} frame={teaser.imageFrame} shape="arch" label="Teaser photo (shown in an arch; if empty, the Coming soon photo is used)" /></div>
       </Card>
 
       <Card title="Announcement bar" hint="One line above the header. Leave empty to hide it.">
@@ -85,8 +106,8 @@ export default async function ContentPage(props: { searchParams: Promise<{ error
           <div><Save /></div>
         </form>
         <div className="mt-6 grid gap-6 sm:grid-cols-2">
-          <Image contentKey="home_hero" field="leftImage" url={hero.leftImage} label="Left photo" />
-          <Image contentKey="home_hero" field="rightImage" url={hero.rightImage} label="Right photo" />
+          <Image contentKey="home_hero" field="leftImage" url={hero.leftImage} frame={hero.leftImageFrame} aspect="1 / 1" label="Left photo" />
+          <Image contentKey="home_hero" field="rightImage" url={hero.rightImage} frame={hero.rightImageFrame} aspect="1 / 1" label="Right photo" />
         </div>
       </Card>
 
@@ -106,7 +127,7 @@ export default async function ContentPage(props: { searchParams: Promise<{ error
           <Field label="Button link" name="buttonHref" defaultValue={feature.buttonHref} />
           <div><Save /></div>
         </form>
-        <div className="mt-6"><Image contentKey="feature_panel" field="image" url={feature.image} label="Photo" /></div>
+        <div className="mt-6"><Image contentKey="feature_panel" field="image" url={feature.image} frame={feature.imageFrame} aspect="4 / 3" label="Photo" /></div>
       </Card>
 
       <Card title="Coming soon" hint="The last section of the home page: the upcoming collection with an email sign-up. Switch it off to show a plain newsletter sign-up instead. Sign-ups are listed under Subscribers.">
@@ -118,7 +139,7 @@ export default async function ContentPage(props: { searchParams: Promise<{ error
           <Field label="Launch line (optional)" name="launch" defaultValue={comingSoon.launch} hint="For example: Launching March 2027" />
           <div><Save /></div>
         </form>
-        <div className="mt-6"><Image contentKey="coming_soon" field="image" url={comingSoon.image} label="Teaser photo (shown in an arch)" /></div>
+        <div className="mt-6"><Image contentKey="coming_soon" field="image" url={comingSoon.image} frame={comingSoon.imageFrame} shape="arch" label="Teaser photo (shown in an arch)" /></div>
       </Card>
 
       <Card title="Instagram" hint="Used for the Instagram link in the footer.">
@@ -164,13 +185,12 @@ export default async function ContentPage(props: { searchParams: Promise<{ error
         {(collections ?? []).length === 0 && <p className="text-sm">Create categories first, under Categories.</p>}
       </Card>
 
-      <Card title="Lookbook photos" hint="Each photo needs alt text and can link to a product by its slug.">
+      <Card title="Lookbook photos" hint="Each photo needs alt text and can link to a product by its slug. Drag a photo in its preview to move it and use Zoom to scale it, then press Save photo.">
         <ul className="space-y-6">
           {lookbook.map((p, i) => (
             <li key={`${p.url}-${i}`} className="flex flex-wrap items-start gap-4 border-b border-line pb-6">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={p.url} alt="" className="h-32 w-auto" />
               <form action={saveLookbookPhoto.bind(null, i)} className="grid gap-3">
+                <FocusPicker key={p.url} src={p.url} initial={p.position ?? ""} shape={LOOKBOOK_SHAPES[i % LOOKBOOK_SHAPES.length]} />
                 <Field label="Alt text" name="alt" defaultValue={p.alt} required />
                 <Field label="Product slug (optional)" name="productSlug" defaultValue={p.productSlug ?? ""} />
                 <div><Small>Save photo</Small></div>

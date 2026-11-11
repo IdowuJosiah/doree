@@ -17,7 +17,8 @@ export async function SiteChrome({ children }: { children: React.ReactNode }) {
   return (
     <StoreProviders>
       {content.teaser.enabled ? (
-        <LaunchGate teaser={<Teaser teaser={content.teaser} image={content.teaser.image || content.coming_soon.image} instagramUrl={content.instagram.url} />}>
+        <LaunchGate teaser={<Teaser teaser={content.teaser} image={content.teaser.image || content.coming_soon.image}
+              imageFrame={content.teaser.image ? content.teaser.imageFrame : content.coming_soon.imageFrame} instagramUrl={content.instagram.url} />}>
           {shop}
         </LaunchGate>
       ) : (

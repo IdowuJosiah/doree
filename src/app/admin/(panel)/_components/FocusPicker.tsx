@@ -17,7 +17,20 @@ const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n
 // Frame a photo for the shop: drag it inside the preview to move it, and use
 // the slider to zoom in. The result is saved in the form field `name`
 // (for example "40% 25% 1.6"); see src/lib/framing.ts.
-export function FocusPicker({ src, initial, name = "object_position", shape = "arch" }: { src: string; initial: string; name?: string; shape?: FrameShape }) {
+export function FocusPicker({
+  src,
+  initial,
+  name = "object_position",
+  shape = "arch",
+  aspect = "3 / 4",
+}: {
+  src: string;
+  initial?: string;
+  name?: string;
+  shape?: FrameShape;
+  /** Width / height of the preview, matching where the photo appears. */
+  aspect?: string;
+}) {
   const [frame, setFrame] = useState<Framing>(parseFraming(initial));
   const [broken, setBroken] = useState(false);
   const drag = useRef<{ x: number; y: number; start: Framing; w: number; h: number } | null>(null);
@@ -36,8 +49,8 @@ export function FocusPicker({ src, initial, name = "object_position", shape = "a
       <div>
         <p className="label mb-1">How it looks on the shop</p>
         <div
-          className="relative h-64 cursor-grab touch-none select-none overflow-hidden bg-cream-deep active:cursor-grabbing"
-          style={{ aspectRatio: "3 / 4", borderRadius: radius[shape] }}
+          className={`relative cursor-grab touch-none select-none overflow-hidden bg-cream-deep active:cursor-grabbing ${aspect === "3 / 4" ? "h-64" : "w-[min(26rem,80vw)]"}`}
+          style={{ aspectRatio: aspect, borderRadius: radius[shape] }}
           onPointerDown={(e) => {
             const r = e.currentTarget.getBoundingClientRect();
             e.currentTarget.setPointerCapture(e.pointerId);

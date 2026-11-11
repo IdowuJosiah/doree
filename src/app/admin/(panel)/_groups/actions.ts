@@ -63,6 +63,13 @@ export async function setGroupBanner(id: string, urls: string[]) {
   if (error) throw new Error(error.message);
   const file = old?.banner_url && storagePath(old.banner_url);
   if (file) await db.storage.from("media").remove([file]);
+  // A new banner starts unframed.
+  const { data: frames } = await db.from("site_content").select("value").eq("key", "banner_frames").maybeSingle();
+  const value = { ...((frames?.value ?? {}) as Record<string, string>) };
+  if (value[id]) {
+    delete value[id];
+    await db.from("site_content").upsert({ key: "banner_frames", value });
+  }
   refreshPublic();
 }
 

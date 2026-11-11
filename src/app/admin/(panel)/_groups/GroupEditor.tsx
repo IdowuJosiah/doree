@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { adminDb } from "@/lib/auth";
 import { Card, Field, Notice, Save, Small, TextArea } from "../_components/ui";
 import { ImageUploader } from "../_components/ImageUploader";
+import { FocusPicker } from "../_components/FocusPicker";
+import { saveBannerFrame } from "../content/actions";
 import { addProductToGroup, clearGroupBanner, deleteGroup, moveGroupProduct, removeProductFromGroup, saveGroup, setGroupBanner } from "./actions";
 import { KINDS, type GroupKind } from "./kinds";
 
@@ -12,10 +14,12 @@ export async function GroupEditor({ kind, id, searchParams }: { kind: GroupKind;
   const { data: c } = await db.from("collections").select("*").eq("id", id).eq("kind", kind).maybeSingle();
   if (!c) notFound();
 
-  const [{ data: links }, { data: all }] = await Promise.all([
+  const [{ data: links }, { data: all }, { data: framesRow }] = await Promise.all([
     db.from("collection_products").select("sort_order, products(id, name)").eq("collection_id", c.id).order("sort_order"),
     db.from("products").select("id, name").eq("archived", false).order("name"),
+    db.from("site_content").select("value").eq("key", "banner_frames").maybeSingle(),
   ]);
+  const bannerFrame = ((framesRow?.value ?? {}) as Record<string, string>)[c.id] ?? "";
   const members = (links ?? []).flatMap((l) => {
     const p = l.products as unknown as { id: string; name: string } | null;
     return p ? [p] : [];
@@ -46,10 +50,12 @@ export async function GroupEditor({ kind, id, searchParams }: { kind: GroupKind;
       {kind === "collection" && (
         <Card title="Banner image" hint={`Shown full width at the top of the ${k.singular} page, as tall as the home page hero. A wide landscape photo works best.`}>
           {c.banner_url && (
-            <div className="mb-4 flex items-end gap-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={c.banner_url} alt="" className="max-h-40 w-auto" />
-              <form action={clearGroupBanner.bind(null, kind, c.id)}><Small danger>Remove</Small></form>
+            <div className="mb-4 space-y-3">
+              <form action={saveBannerFrame.bind(null, c.id, `${k.path}/${c.id}`)} className="space-y-3">
+                <FocusPicker key={c.banner_url} src={c.banner_url} initial={bannerFrame} shape="rect" aspect="2 / 1" />
+                <Small>Save framing</Small>
+              </form>
+              <form action={clearGroupBanner.bind(null, kind, c.id)}><Small danger>Remove banner</Small></form>
             </div>
           )}
           <ImageUploader folder={`collections/${c.id}`} onUploaded={setGroupBanner.bind(null, c.id)} label={c.banner_url ? "Replace banner" : "Upload banner"} />

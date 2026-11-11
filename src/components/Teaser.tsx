@@ -5,7 +5,7 @@ import { Shaped } from "./Shaped";
 import { SignupForm } from "./SignupForm";
 
 // The whole shop until launch: the coming collection and an email sign-up.
-export function Teaser({ teaser, image, instagramUrl }: { teaser: TeaserContent; image: string; instagramUrl: string }) {
+export function Teaser({ teaser, image, imageFrame, instagramUrl }: { teaser: TeaserContent; image: string; imageFrame?: string; instagramUrl: string }) {
   const year = new Date().getFullYear();
   return (
     <div className="flex min-h-screen flex-col bg-cream-deep">
@@ -23,7 +23,7 @@ export function Teaser({ teaser, image, instagramUrl }: { teaser: TeaserContent;
           </div>
         </div>
         <div className="mx-auto w-full max-w-[15rem] lg:max-w-sm">
-          <Shaped image={{ src: image || undefined, alt: `The ${teaser.title} collection` }} shape="arch" priority sizes="(min-width: 1024px) 24rem, 80vw" className="!bg-line [&_.placeholder]:!bg-line" />
+          <Shaped image={{ src: image || undefined, alt: `The ${teaser.title} collection`, objectPosition: imageFrame }} shape="arch" priority sizes="(min-width: 1024px) 24rem, 80vw" className="!bg-line [&_.placeholder]:!bg-line" />
         </div>
       </main>
 

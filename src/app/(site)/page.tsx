@@ -23,10 +23,10 @@ export default async function Home() {
       {/* 1. Hero */}
       <section className="relative grid min-h-[70vh] lg:grid-cols-2">
         <div className="relative">
-          <Cover src={hero.leftImage} alt="Hero photo" priority sizes="(min-width: 1024px) 50vw, 100vw" />
+          <Cover src={hero.leftImage} framing={hero.leftImageFrame} alt="Hero photo" priority sizes="(min-width: 1024px) 50vw, 100vw" />
         </div>
         <div className="relative hidden lg:block">
-          <Cover src={hero.rightImage} alt="Hero photo" priority sizes="50vw" className={hero.rightImage ? "" : "!bg-line"} />
+          <Cover src={hero.rightImage} framing={hero.rightImageFrame} alt="Hero photo" priority sizes="50vw" className={hero.rightImage ? "" : "!bg-line"} />
         </div>
         <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
           <h1 className="display-xl">{hero.title}</h1>
@@ -99,7 +99,7 @@ export default async function Home() {
       {/* 5. Feature split */}
       <section className="grid lg:grid-cols-2">
         <div className="relative min-h-[24rem]">
-          <Cover src={feature.image} alt={feature.title} sizes="(min-width: 1024px) 50vw, 100vw" />
+          <Cover src={feature.image} framing={feature.imageFrame} alt={feature.title} sizes="(min-width: 1024px) 50vw, 100vw" />
         </div>
         <div className="flex flex-col items-start justify-center gap-4 bg-gold p-8 text-ink lg:p-24">
           <Logo color="ink" height={26} />
@@ -117,7 +117,7 @@ export default async function Home() {
         {comingSoon.enabled ? (
           <div className="section container-page grid items-center gap-10 lg:grid-cols-2 lg:gap-24">
             <Reveal className="mx-auto w-full max-w-sm">
-              <Shaped image={{ src: comingSoon.image || undefined, alt: comingSoon.title }} shape="arch" sizes="(min-width: 1024px) 24rem, 80vw" className="!bg-line [&_.placeholder]:!bg-line" />
+              <Shaped image={{ src: comingSoon.image || undefined, alt: comingSoon.title, objectPosition: comingSoon.imageFrame }} shape="arch" sizes="(min-width: 1024px) 24rem, 80vw" className="!bg-line [&_.placeholder]:!bg-line" />
             </Reveal>
             <Reveal>
               <h2 className="font-display text-4xl uppercase lg:text-6xl">{comingSoon.title}</h2>

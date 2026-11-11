@@ -22,7 +22,7 @@ export default async function LookbookPage() {
       ) : (
         <ul className="grid grid-cols-2 gap-4 lg:grid-cols-3 lg:gap-6">
           {lookbook.photos.map((p, i) => {
-            const tile = <Shaped image={{ src: p.url, alt: p.alt }} shape={shapes[i % shapes.length]} />;
+            const tile = <Shaped image={{ src: p.url, alt: p.alt, objectPosition: p.position }} shape={shapes[i % shapes.length]} />;
             return (
               <li key={`${p.url}-${i}`}>
                 <Reveal>
