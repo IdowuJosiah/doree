@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { adminDb } from "@/lib/auth";
-import { contentDefaults, type LookbookPhoto } from "@/lib/data/site";
+import { contentDefaults, PAGE_PHOTO_SLOTS, type LookbookPhoto, type PagePhotoSlot } from "@/lib/data/site";
 import { PAGE_SLUGS } from "../_lib";
 import { Card, Check, Field, Notice, Save, Small, TextArea } from "../_components/ui";
 import { ImageUploader } from "../_components/ImageUploader";
 import { FocusPicker, type FrameShape } from "../_components/FocusPicker";
 import {
   addLookbookPhotos, clearCatalogCover, saveCatalogFocus, setCatalogCover, clearContentImage, deleteLookbookPhoto, moveLookbookPhoto,
-  saveContent, saveContentFrame, saveLookbookPhoto, savePage, setContentImage,
+  saveContent, saveContentFrame, saveLookbookPhoto, savePage, setContentImage, setPagePhoto, savePagePhotoFrame, clearPagePhoto,
 } from "./actions";
 
 export const metadata: Metadata = { title: "Site content" };
@@ -51,6 +51,25 @@ function Image({
   );
 }
 
+function PagePhoto({ slot, photo }: { slot: PagePhotoSlot; photo?: { url: string; position?: string } }) {
+  const { label, shape, aspect } = PAGE_PHOTO_SLOTS[slot];
+  return (
+    <div>
+      <p className="label mb-1">{label}</p>
+      {photo?.url && (
+        <>
+          <form action={savePagePhotoFrame.bind(null, slot)} className="mb-3 space-y-3">
+            <FocusPicker key={photo.url} src={photo.url} initial={photo.position ?? ""} shape={shape} aspect={aspect} />
+            <Small>Save framing</Small>
+          </form>
+          <form action={clearPagePhoto.bind(null, slot)} className="mb-2"><Small danger>Remove photo</Small></form>
+        </>
+      )}
+      <ImageUploader folder="pages" onUploaded={setPagePhoto.bind(null, slot)} label={photo?.url ? "Replace photo" : "Upload photo"} />
+    </div>
+  );
+}
+
 export default async function ContentPage(props: { searchParams: Promise<{ error?: string; saved?: string }> }) {
   const searchParams = await props.searchParams;
   const db = await adminDb();
@@ -69,6 +88,7 @@ export default async function ContentPage(props: { searchParams: Promise<{ error
   const teaser = { ...contentDefaults.teaser, ...((rows.get("teaser") as unknown as Partial<typeof contentDefaults.teaser>) ?? {}) };
   const comingSoon = { ...contentDefaults.coming_soon, ...((rows.get("coming_soon") as unknown as Partial<typeof contentDefaults.coming_soon>) ?? {}) };
   const coverMap = (rows.get("catalog_covers") ?? {}) as unknown as Record<string, { url: string; position?: string }>;
+  const pagePhotos = (rows.get("page_photos") ?? {}) as unknown as Record<string, { url: string; position?: string }>;
   const lookbook = ((rows.get("lookbook") as unknown as { photos?: LookbookPhoto[] })?.photos ?? []);
 
   return (
@@ -216,6 +236,13 @@ export default async function ContentPage(props: { searchParams: Promise<{ error
               <TextArea label="Content" name="body" defaultValue={page.body ?? ""} rows={10} />
               <div><Save /></div>
             </form>
+            {(Object.keys(PAGE_PHOTO_SLOTS) as PagePhotoSlot[]).some((k) => PAGE_PHOTO_SLOTS[k].page === slug) && (
+              <div className="mt-8 grid gap-8 border-t border-line pt-6 lg:grid-cols-2">
+                {(Object.keys(PAGE_PHOTO_SLOTS) as PagePhotoSlot[])
+                  .filter((k) => PAGE_PHOTO_SLOTS[k].page === slug)
+                  .map((k) => <PagePhoto key={k} slot={k} photo={pagePhotos[k]} />)}
+              </div>
+            )}
           </Card>
         );
       })}

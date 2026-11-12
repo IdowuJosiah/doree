@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Shaped, type Shape } from "@/components/Shaped";
+import { getSiteContent } from "@/lib/data/site";
 
 export const metadata: Metadata = { title: "Care and guides" };
+// Refreshes at most a minute after any database change, so no redeploy is needed.
+export const revalidate = 60;
 
 const guides: { slug: string; title: string; text: string; shape: Shape }[] = [
   { slug: "size-guide", title: "Size guide", text: "Ring, bracelet and necklace sizes.", shape: "arch" },
@@ -10,7 +13,8 @@ const guides: { slug: string; title: string; text: string; shape: Shape }[] = [
   { slug: "materials", title: "Materials", text: "What our jewelry is made of.", shape: "arch" },
 ];
 
-export default function GuidesPage() {
+export default async function GuidesPage() {
+  const { page_photos: photos } = await getSiteContent();
   return (
     <section className="section container-page">
       <h1 className="display-xl">Care and guides</h1>
@@ -19,7 +23,7 @@ export default function GuidesPage() {
         {guides.map((g) => (
           <li key={g.slug}>
             <Link href={`/guides/${g.slug}`} className="zoom group block">
-              <Shaped image={{ alt: "" }} shape={g.shape} />
+              <Shaped image={{ src: photos[`guide:${g.slug}`]?.url, alt: "", objectPosition: photos[`guide:${g.slug}`]?.position }} shape={g.shape} />
               <h2 className="mt-4 font-display text-2xl group-hover:text-gold-text">{g.title}</h2>
               <p className="text-sm">{g.text}</p>
             </Link>

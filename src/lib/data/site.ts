@@ -59,6 +59,8 @@ export type SiteContent = {
   catalog_covers: Record<string, CatalogCover>;
   /** Framing of each category/collection banner, by its id. */
   banner_frames: Record<string, string>;
+  /** Photos on the text pages, by slot (see PAGE_PHOTO_SLOTS). */
+  page_photos: Record<string, CatalogCover>;
 };
 
 export const contentDefaults: SiteContent = {
@@ -101,6 +103,7 @@ export const contentDefaults: SiteContent = {
   lookbook: { photos: [] },
   catalog_covers: {},
   banner_frames: {},
+  page_photos: {},
 };
 
 // Rows in site_content override the defaults key by key.
@@ -139,3 +142,18 @@ export async function getShippingSettings(): Promise<ShippingSettings> {
   if (error) return onReadError(error, emptyShipping, "shipping settings");
   return toShippingSettings(data);
 }
+
+/**
+ * Photo spots on the text pages: the tiles on the Care and guides page and
+ * the About page header and strip. `shape`/`aspect` match where they appear.
+ */
+export const PAGE_PHOTO_SLOTS = {
+  "guide:size-guide": { page: "size-guide", label: "Tile on the Care and guides page", shape: "arch", aspect: "3 / 4" },
+  "guide:jewelry-care": { page: "jewelry-care", label: "Tile on the Care and guides page", shape: "quarter", aspect: "3 / 4" },
+  "guide:materials": { page: "materials", label: "Tile on the Care and guides page", shape: "arch", aspect: "3 / 4" },
+  "about:header": { page: "about", label: "Header photo (behind the title)", shape: "rect", aspect: "2 / 1" },
+  "about:1": { page: "about", label: "Photo strip, left", shape: "arch", aspect: "3 / 4" },
+  "about:2": { page: "about", label: "Photo strip, middle", shape: "arch", aspect: "3 / 4" },
+  "about:3": { page: "about", label: "Photo strip, right", shape: "arch", aspect: "3 / 4" },
+} as const;
+export type PagePhotoSlot = keyof typeof PAGE_PHOTO_SLOTS;

@@ -1,7 +1,7 @@
 "use server";
 
 import { adminDb } from "@/lib/auth";
-import { contentDefaults, type LookbookPhoto } from "@/lib/data/site";
+import { contentDefaults, PAGE_PHOTO_SLOTS, type LookbookPhoto } from "@/lib/data/site";
 import { PAGE_SLUGS, bool, fail, refreshPublic, safeHref, saved, storagePath, str } from "../_lib";
 
 const PATH = "/admin/content";
@@ -184,5 +184,42 @@ export async function savePage(slug: string, fd: FormData) {
   const db = await adminDb();
   if (!PAGE_SLUGS.some((p) => p.slug === slug)) fail(PATH, "Unknown page.");
   await write(db, `page:${slug}`, { title: str(fd, "title"), intro: str(fd, "intro"), body: String(fd.get("body") ?? "") });
+  saved(PATH);
+}
+
+// Text page photos (guides tiles, About page) ----------------------------------
+
+const isSlot = (slot: string) => Object.hasOwn(PAGE_PHOTO_SLOTS, slot);
+
+export async function setPagePhoto(slot: string, urls: string[]) {
+  const db = await adminDb();
+  if (!isSlot(slot)) throw new Error("Unknown photo spot.");
+  const all = (await read(db, "page_photos")) as Covers;
+  const old = all[slot]?.url;
+  all[slot] = { url: urls[0], position: "" };
+  const { error } = await db.from("site_content").upsert({ key: "page_photos", value: all });
+  if (error) throw new Error(error.message);
+  const file = old && storagePath(old);
+  if (file) await db.storage.from("media").remove([file]);
+  refreshPublic();
+}
+
+export async function savePagePhotoFrame(slot: string, fd: FormData) {
+  const db = await adminDb();
+  const all = (await read(db, "page_photos")) as Covers;
+  if (!isSlot(slot) || !all[slot]) fail(PATH, "Upload a photo first.");
+  all[slot] = { ...all[slot], position: str(fd, "object_position") };
+  await write(db, "page_photos", all);
+  saved(PATH);
+}
+
+export async function clearPagePhoto(slot: string) {
+  const db = await adminDb();
+  const all = (await read(db, "page_photos")) as Covers;
+  const old = all[slot]?.url;
+  delete all[slot];
+  await write(db, "page_photos", all);
+  const file = old && storagePath(old);
+  if (file) await db.storage.from("media").remove([file]);
   saved(PATH);
 }
