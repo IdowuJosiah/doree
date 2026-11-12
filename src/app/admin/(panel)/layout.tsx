@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Suspense } from "react";
+import { SaveFlash } from "./_components/SaveFlash";
 import { requireAdmin } from "@/lib/auth";
 import { Logo } from "@/components/Logo";
 import { adminSignOut } from "../login/actions";
@@ -34,6 +36,9 @@ export default async function AdminPanelLayout({ children }: { children: React.R
         </form>
       </aside>
       <div className="min-w-0 p-4 sm:p-8">{children}</div>
+      <Suspense>
+        <SaveFlash />
+      </Suspense>
     </div>
   );
 }

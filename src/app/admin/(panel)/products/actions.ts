@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { adminDb } from "@/lib/auth";
 import { dollarsToCents } from "@/lib/format";
-import { bool, fail, refreshPublic, saved, slugify, storagePath, str } from "../_lib";
+import { bool, fail, refreshPublic, saved, slugify, stamp, storagePath, str } from "../_lib";
 
 // Every export below is a public endpoint, so each one starts with adminDb():
 // it verifies the admin role on the server and returns a session client, so
@@ -62,7 +62,7 @@ export async function setPublished(id: string, publish: boolean, returnTo: strin
   const { error } = await db.from("products").update({ published: publish, ...(publish ? { archived: false } : {}) }).eq("id", id);
   if (error) fail(back, error.message);
   refreshPublic();
-  redirect(`${back}${back.includes("?") ? "&" : "?"}${publish ? "published=1" : "unpublished=1"}`);
+  redirect(`${back}${back.includes("?") ? "&" : "?"}${publish ? "published=1" : "unpublished=1"}&${stamp()}`);
 }
 
 export async function saveProduct(id: string, fd: FormData) {

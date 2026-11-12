@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { adminDb } from "@/lib/auth";
 import { parseStockChanges } from "@/lib/inventory";
-import { fail, refreshPublic } from "../_lib";
+import { fail, refreshPublic, stamp } from "../_lib";
 
 /**
  * Saves every stock count that was changed on the inventory screen.
@@ -29,5 +29,5 @@ export async function saveStock(returnTo: string, fd: FormData) {
   if (conflicts) {
     redirect(`${back}${sep}error=${encodeURIComponent(`${conflicts} item(s) sold while you were editing, so they were not changed. Check the new numbers and save again.`)}`);
   }
-  redirect(`${back}${sep}saved=1`);
+  redirect(`${back}${sep}saved=1&${stamp()}`);
 }

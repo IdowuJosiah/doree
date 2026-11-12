@@ -12,13 +12,20 @@ export const slugify = (s: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
+const sep = (path: string) => (path.includes("?") ? "&" : "?");
+/**
+ * A changing value added to the address after each save, so a second save on
+ * the same screen still counts as a change and the "Saved" message shows again.
+ */
+export const stamp = () => `t=${Date.now().toString(36)}`;
+
 /** Goes back to a screen with an error message shown at the top. */
 export function fail(path: string, message: string): never {
-  redirect(`${path}?error=${encodeURIComponent(message)}`);
+  redirect(`${path}${sep(path)}error=${encodeURIComponent(message)}&${stamp()}`);
 }
 
 export function saved(path: string): never {
-  redirect(`${path}?saved=1`);
+  redirect(`${path}${sep(path)}saved=1&${stamp()}`);
 }
 
 /** Public pages are cached; admin writes refresh them. */
