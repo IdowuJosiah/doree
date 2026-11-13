@@ -1,6 +1,8 @@
 "use server";
 
+import { headers } from "next/headers";
 import { z } from "zod";
+import { allow, clientIp, TOO_MANY } from "@/lib/rate-limit";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createServiceClient } from "@/lib/supabase/service";
 import { notifyAddress, sendEmail } from "@/lib/email/send";
@@ -20,6 +22,7 @@ export async function sendMessage(_prev: ContactState, formData: FormData): Prom
   if (!parsed.success) return { status: "error", message: "Please fill in your name, a valid email and a message." };
   if (parsed.data.company) return { status: "ok", message: "Thank you. We will reply soon." };
   if (!isSupabaseConfigured()) return { status: "error", message: "The contact form is not open yet. Please email us instead." };
+  if (!(await allow("contact", clientIp(await headers())))) return { status: "error", message: TOO_MANY };
   try {
     const { name, email, message } = parsed.data;
     const { error } = await createServiceClient().from("contact_messages").insert({ name, email, message });

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createServiceClient } from "@/lib/supabase/service";
+import { allow, clientIp, TOO_MANY } from "@/lib/rate-limit";
 import { createSquarePayment } from "@/lib/square";
 
 const schema = z.object({ orderId: z.string().uuid(), sourceId: z.string().min(1).max(500) });
@@ -10,6 +11,13 @@ const schema = z.object({ orderId: z.string().uuid(), sourceId: z.string().min(1
 export async function POST(request: Request) {
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+
+  // Slows down card testing: a few tries per visitor and per order.
+  const [byVisitor, byOrder] = await Promise.all([
+    allow("pay", clientIp(request.headers)),
+    allow("payPerOrder", parsed.data.orderId),
+  ]);
+  if (!byVisitor || !byOrder) return NextResponse.json({ error: TOO_MANY }, { status: 429 });
 
   const db = createServiceClient();
   const { data: order } = await db

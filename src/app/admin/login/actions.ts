@@ -2,10 +2,14 @@
 
 import { redirect } from "next/navigation";
 import { isAdminUser } from "@/lib/auth";
+import { safePath } from "@/lib/safe-path";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSessionClient } from "@/lib/supabase/server";
 
-const safeNext = (next: string) => (next.startsWith("/admin") && !next.startsWith("/admin/login") ? next : "/admin");
+const safeNext = (next: string) => {
+  const path = safePath(next, "/admin", "/admin");
+  return path.startsWith("/admin/login") ? "/admin" : path;
+};
 
 // Only accounts with the admin role get in. A customer's correct password is
 // refused with the same message as a wrong one, and their session is ended.

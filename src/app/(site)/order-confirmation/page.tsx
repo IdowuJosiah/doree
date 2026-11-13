@@ -16,7 +16,7 @@ export default async function OrderConfirmation(props: { searchParams: Promise<{
   const id = searchParams.order ?? "";
   const valid = /^[0-9a-f-]{36}$/i.test(id) && isSupabaseConfigured() && process.env.SUPABASE_SERVICE_ROLE_KEY;
   const { data: order } = valid
-    ? await createServiceClient().from("orders").select("number, email, status, subtotal, shipping_fee, total, order_items(name, price, quantity)").eq("id", id).maybeSingle()
+    ? await createServiceClient().from("orders").select("*, order_items(name, price, quantity)").eq("id", id).maybeSingle()
     : { data: null };
 
   return (
@@ -36,6 +36,9 @@ export default async function OrderConfirmation(props: { searchParams: Promise<{
             </ul>
             <dl className="mt-3 space-y-1 border-t border-line pt-3">
               <div className="flex justify-between"><dt>Subtotal</dt><dd>{formatPrice(order.subtotal)}</dd></div>
+              {order.discount_amount > 0 && (
+                <div className="flex justify-between text-gold-text"><dt>Discount ({order.discount_code})</dt><dd>−{formatPrice(order.discount_amount)}</dd></div>
+              )}
               <div className="flex justify-between"><dt>Shipping</dt><dd>{formatPrice(order.shipping_fee)}</dd></div>
               <div className="flex justify-between text-base font-medium"><dt>Total</dt><dd>{formatPrice(order.total)}</dd></div>
             </dl>

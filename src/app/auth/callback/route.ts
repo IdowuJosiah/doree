@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { safePath } from "@/lib/safe-path";
 import { createSessionClient } from "@/lib/supabase/server";
 
 // Landing point for the email confirmation link: exchanges the one-time code
@@ -6,8 +7,7 @@ import { createSessionClient } from "@/lib/supabase/server";
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
-  const nextParam = url.searchParams.get("next") ?? "/account";
-  const next = nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : "/account";
+  const next = safePath(url.searchParams.get("next"), "/account");
   if (code) {
     const { error } = await (await createSessionClient()).auth.exchangeCodeForSession(code);
     if (!error) return NextResponse.redirect(new URL(next, url.origin));

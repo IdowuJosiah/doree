@@ -1,6 +1,8 @@
 "use server";
 
+import { headers } from "next/headers";
 import { z } from "zod";
+import { allow, clientIp, TOO_MANY } from "@/lib/rate-limit";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createServiceClient } from "@/lib/supabase/service";
 
@@ -18,6 +20,7 @@ export async function subscribe(_prev: SignupState, formData: FormData): Promise
   if (!parsed.success) return { status: "error", message: "Please enter a valid email address." };
   if (parsed.data.company) return { status: "ok", message: "Thank you. We will be in touch." };
   if (!isSupabaseConfigured()) return { status: "error", message: "Sign-ups are not open yet. Please try again soon." };
+  if (!(await allow("subscribe", clientIp(await headers())))) return { status: "error", message: TOO_MANY };
 
   try {
     const { error } = await createServiceClient()
