@@ -1,6 +1,7 @@
 "use server";
 
 import { adminDb } from "@/lib/auth";
+import { endOfShopDay } from "@/lib/shop-time";
 import { fail, saved, str } from "../_lib";
 
 const PATH = "/admin/discounts";
@@ -34,8 +35,8 @@ export async function createDiscount(fd: FormData) {
     percent,
     max_uses: maxUses ? Number(maxUses) : null,
     min_subtotal: min,
-    // The end date covers the whole of that day, US Eastern time.
-    ends_at: ends ? new Date(`${ends}T23:59:59-05:00`).toISOString() : null,
+    // The end date covers the whole of that day, US Central time.
+    ends_at: ends ? endOfShopDay(ends).toISOString() : null,
   });
   if (error) fail(PATH, error.code === "23505" ? `${code} already exists.` : error.code === "42P01" ? "Run the discounts database update first (see below)." : error.message);
   saved(PATH);

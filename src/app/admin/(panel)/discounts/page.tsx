@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { adminDb } from "@/lib/auth";
 import { formatPrice } from "@/lib/format";
+import { shopDate } from "@/lib/shop-time";
 import { Card, Field, Notice, Small } from "../_components/ui";
 import { createDiscount, deleteDiscount, setDiscountActive } from "./actions";
 
@@ -52,7 +53,7 @@ export default async function DiscountsPage(props: { searchParams: Promise<{ err
         <form action={createDiscount} className="grid max-w-2xl gap-4 sm:grid-cols-2">
           <Field label="Code" name="code" required hint="What customers type, e.g. GOLDEN15. Letters and numbers, no spaces." />
           <Field label="Percent off" name="percent" type="number" required hint="1 to 100" />
-          <Field label="Ends on (optional)" name="ends_at" type="date" hint="Works until the end of that day (US Eastern time). Empty: no end." />
+          <Field label="Ends on (optional)" name="ends_at" type="date" hint="Works until 11:59 pm Central time on that day. Empty: no end." />
           <Field label="Usage limit (optional)" name="max_uses" type="number" hint="How many paid orders can use it. Empty: unlimited." />
           <Field label="Minimum order (optional)" name="min_subtotal" type="number" step="0.01" hint="In dollars, before shipping. Empty: none." />
           <div className="sm:col-span-2"><button type="submit" className="btn-primary">Create code</button></div>
@@ -77,7 +78,7 @@ export default async function DiscountsPage(props: { searchParams: Promise<{ err
                         <td className="py-3 font-medium tracking-wide">{c.code}</td>
                         <td>{c.percent}%</td>
                         <td>{c.uses}{c.max_uses !== null && ` of ${c.max_uses}`}</td>
-                        <td>{c.ends_at ? new Date(c.ends_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—"}</td>
+                        <td>{c.ends_at ? shopDate(c.ends_at) : "—"}</td>
                         <td>{c.min_subtotal ? formatPrice(c.min_subtotal) : "—"}</td>
                         <td className={st.cls}>{st.label}</td>
                         <td>
