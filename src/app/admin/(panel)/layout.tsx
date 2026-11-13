@@ -11,6 +11,7 @@ const nav = [
   { href: "/admin/categories", label: "Categories" },
   { href: "/admin/collections", label: "Collections" },
   { href: "/admin/orders", label: "Orders" },
+  { href: "/admin/discounts", label: "Discounts" },
   { href: "/admin/messages", label: "Messages" },
   { href: "/admin/shipping", label: "Shipping" },
   { href: "/admin/content", label: "Site content" },

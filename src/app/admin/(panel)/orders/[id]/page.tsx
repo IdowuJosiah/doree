@@ -42,6 +42,9 @@ export default async function OrderPage(props: { params: Promise<{ id: string }>
               </tr>
             ))}
             <tr><td className="pt-3" colSpan={2}>Subtotal</td><td className="pt-3 text-right">{formatPrice(o.subtotal)}</td></tr>
+            {o.discount_amount > 0 && (
+              <tr className="text-gold-text"><td colSpan={2}>Discount ({o.discount_code})</td><td className="text-right">−{formatPrice(o.discount_amount)}</td></tr>
+            )}
             <tr><td colSpan={2}>Shipping ({o.state})</td><td className="text-right">{formatPrice(o.shipping_fee)}</td></tr>
             <tr className="font-medium"><td colSpan={2}>Total</td><td className="text-right">{formatPrice(o.total)}</td></tr>
           </tbody>

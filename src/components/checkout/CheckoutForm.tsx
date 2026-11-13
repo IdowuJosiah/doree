@@ -10,7 +10,7 @@ import { US_STATES } from "@/lib/us-states";
 import { useCart } from "../store/Cart";
 import { SquareCard } from "./SquareCard";
 
-type Order = { orderId: string; number: number; subtotal: number; shippingFee: number; total: number };
+type Order = { orderId: string; number: number; subtotal: number; discount: number; discountCode: string | null; shippingFee: number; total: number };
 type SquareConfig = { appId: string; locationId: string; sandbox: boolean };
 
 /** Checkout step number, highlighted in gold. */
@@ -52,7 +52,7 @@ export function CheckoutForm({ shipping, square }: { shipping: ShippingSettings;
   }
 
   const estimateFee = state ? shippingFeeFor(state, shipping) : null;
-  const shown = order ?? { subtotal, shippingFee: estimateFee ?? 0, total: subtotal + (estimateFee ?? 0) };
+  const shown = order ?? { subtotal, discount: 0, discountCode: null, shippingFee: estimateFee ?? 0, total: subtotal + (estimateFee ?? 0) };
   const paymentsConfigured = Boolean(square.appId && square.locationId);
 
   // Step 1: the server checks stock, recalculates every price and the
@@ -63,6 +63,7 @@ export function CheckoutForm({ shipping, square }: { shipping: ShippingSettings;
       email: f.get("email"),
       name: f.get("name"),
       address: { line1: f.get("line1"), line2: f.get("line2") || undefined, city: f.get("city"), state: f.get("state"), postalCode: f.get("postalCode") },
+      discountCode: String(f.get("discountCode") ?? "").trim() || undefined,
       items: items.map((i) => ({ variantId: i.variantId, quantity: i.quantity })),
     };
     const res = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
@@ -110,6 +111,9 @@ export function CheckoutForm({ shipping, square }: { shipping: ShippingSettings;
           </ul>
           <dl className="mt-4 space-y-1 border-t border-line pt-4 text-sm">
             <div className="flex justify-between"><dt>Subtotal</dt><dd>{formatPrice(shown.subtotal)}</dd></div>
+            {shown.discount > 0 && (
+              <div className="flex justify-between text-gold-text"><dt>Discount ({shown.discountCode})</dt><dd>−{formatPrice(shown.discount)}</dd></div>
+            )}
             <div className="flex justify-between"><dt>Shipping</dt><dd>{order || estimateFee !== null ? formatPrice(shown.shippingFee) : "Choose your state"}</dd></div>
             <div className="flex justify-between pt-2 text-base font-medium"><dt>Total</dt><dd>{formatPrice(shown.total)}</dd></div>
           </dl>
@@ -144,6 +148,10 @@ export function CheckoutForm({ shipping, square }: { shipping: ShippingSettings;
                 </div>
                 <Input label="ZIP code" name="postalCode" autoComplete="postal-code" />
               </div>
+            </div>
+            <div className="max-w-xs">
+              <label htmlFor="discountCode" className="label mb-1 block">Discount code<span className="ml-1 normal-case tracking-normal opacity-60">(optional)</span></label>
+              <input id="discountCode" name="discountCode" autoComplete="off" autoCapitalize="characters" spellCheck={false} className="field uppercase" />
             </div>
             {!order && <button type="submit" className="btn-primary w-full sm:w-auto">{busy ? "Checking…" : "Continue to payment"}</button>}
           </fieldset>

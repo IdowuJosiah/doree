@@ -6,7 +6,7 @@ import { customerConfirmation, newOrderAlert, orderShipped, paymentReviewAlert, 
 async function loadOrder(orderId: string): Promise<EmailOrder | null> {
   const { data: o, error } = await createServiceClient()
     .from("orders")
-    .select("id, number, name, email, address, subtotal, shipping_fee, total, order_items(name, price, quantity)")
+    .select("*, order_items(name, price, quantity)")
     .eq("id", orderId)
     .maybeSingle();
   if (error || !o) {
@@ -20,6 +20,8 @@ async function loadOrder(orderId: string): Promise<EmailOrder | null> {
     email: o.email,
     address: o.address ?? {},
     subtotal: o.subtotal,
+    discount: o.discount_amount ?? 0,
+    discountCode: o.discount_code ?? null,
     shippingFee: o.shipping_fee,
     total: o.total,
     items: o.order_items ?? [],

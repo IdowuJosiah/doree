@@ -11,6 +11,9 @@ export type EmailOrder = {
   email: string;
   address: { line1?: string; line2?: string; city?: string; state?: string; postalCode?: string };
   subtotal: number;
+  /** Cents off the subtotal from a discount code; 0 when none. */
+  discount?: number;
+  discountCode?: string | null;
   shippingFee: number;
   total: number;
   items: { name: string; price: number; quantity: number }[];
@@ -52,7 +55,7 @@ function itemsTable(order: EmailOrder) {
     `<tr><td style="padding:4px 0;font-size:16px;${bold ? "font-weight:bold;" : ""}">${label}</td><td style="padding:4px 0;font-size:16px;text-align:right;${bold ? "font-weight:bold;" : ""}">${value}</td></tr>`;
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows}
 <tr><td colspan="2" style="height:8px;"></td></tr>
-${line("Subtotal", formatPrice(order.subtotal))}${line("Shipping", formatPrice(order.shippingFee))}${line("Total", formatPrice(order.total), true)}</table>`;
+${line("Subtotal", formatPrice(order.subtotal))}${order.discount ? line(`Discount (${escapeHtml(order.discountCode ?? "")})`, `−${formatPrice(order.discount)}`) : ""}${line("Shipping", formatPrice(order.shippingFee))}${line("Total", formatPrice(order.total), true)}</table>`;
 }
 
 function itemsText(order: EmailOrder) {
@@ -60,6 +63,7 @@ function itemsText(order: EmailOrder) {
     ...order.items.map((i) => `${i.name} x ${i.quantity}  ${formatPrice(i.price * i.quantity)}`),
     "",
     `Subtotal  ${formatPrice(order.subtotal)}`,
+    ...(order.discount ? [`Discount (${order.discountCode ?? ""})  -${formatPrice(order.discount)}`] : []),
     `Shipping  ${formatPrice(order.shippingFee)}`,
     `Total     ${formatPrice(order.total)}`,
   ].join("\n");

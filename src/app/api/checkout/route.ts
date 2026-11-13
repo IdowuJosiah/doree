@@ -16,6 +16,8 @@ export async function POST(request: Request) {
       orderId: order.orderId,
       number: order.number,
       subtotal: order.subtotal,
+      discount: order.discount,
+      discountCode: order.discountCode,
       shippingFee: order.shippingFee,
       total: order.total,
     });

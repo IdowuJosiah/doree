@@ -87,3 +87,18 @@ describe("sendEmail", () => {
     expect(await sendEmail({ to: "a@b.com", email, fetchImpl: vi.fn(async () => { throw new Error("network"); }) })).toBe(false);
   });
 });
+
+describe("discounts in emails", () => {
+  it("shows the code and amount between subtotal and shipping", () => {
+    const { html, text } = customerConfirmation({ ...order, discount: 2040, discountCode: "GOLDEN15", total: 13600 - 2040 + 1500 }, "https://doree.example");
+    expect(html).toContain("Discount (GOLDEN15)");
+    expect(html).toContain("−$20.40");
+    expect(text).toContain("Discount (GOLDEN15)  -$20.40");
+    expect(html.indexOf("Discount")).toBeGreaterThan(html.indexOf("Subtotal"));
+    expect(html.indexOf("Discount")).toBeLessThan(html.indexOf("Shipping"));
+  });
+
+  it("leaves the line out when there is no discount", () => {
+    expect(customerConfirmation(order, "").html).not.toContain("Discount");
+  });
+});

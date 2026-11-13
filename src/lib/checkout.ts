@@ -1,6 +1,6 @@
 import "server-only";
 import { z } from "zod";
-import { CheckoutError, priceOrder, type VariantRecord } from "./pricing";
+import { CheckoutError, priceOrder, type DiscountRecord, type VariantRecord } from "./pricing";
 import { toShippingSettings } from "./data/site";
 import { createServiceClient } from "./supabase/service";
 import { isUsState } from "./us-states";
@@ -20,6 +20,7 @@ export const checkoutSchema = z.object({
     state: z.string().trim().toUpperCase().refine(isUsState, "Choose a valid state"),
     postalCode: z.string().trim().min(3).max(12),
   }),
+  discountCode: z.string().trim().toUpperCase().max(40).optional(),
 });
 
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
@@ -47,7 +48,20 @@ export async function createPendingOrder(input: CheckoutInput, customerId: strin
     .maybeSingle();
   if (shippingError) throw shippingError;
 
-  const priced = priceOrder(input.items, variants, input.address.state, toShippingSettings(shippingRow));
+  // undefined = no code entered; null = entered but not found.
+  let discount: DiscountRecord | null | undefined;
+  if (input.discountCode) {
+    const { data: code, error: codeError } = await db
+      .from("discount_codes")
+      .select("code, percent, active, starts_at, ends_at, max_uses, uses, min_subtotal")
+      .eq("code", input.discountCode)
+      .maybeSingle<DiscountRecord>();
+    // Before the discounts migration is run the table does not exist.
+    if (codeError) throw new CheckoutError("Discount codes can't be used right now. Remove the code to continue.");
+    discount = code;
+  }
+
+  const priced = priceOrder(input.items, variants, input.address.state, toShippingSettings(shippingRow), discount);
 
   const { data: order, error: orderError } = await db
     .from("orders")
@@ -58,6 +72,9 @@ export async function createPendingOrder(input: CheckoutInput, customerId: strin
       address: input.address,
       state: input.address.state,
       subtotal: priced.subtotal,
+      // Only sent when a code was used, so checkout keeps working before the
+      // discounts migration has added these columns.
+      ...(priced.discount > 0 || priced.discountCode ? { discount_code: priced.discountCode, discount_amount: priced.discount } : {}),
       shipping_fee: priced.shippingFee,
       total: priced.total,
       status: "pending",
