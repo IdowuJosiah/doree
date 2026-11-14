@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: "Order" };
 
 const labels: Record<string, string> = { pending: "Pending", paid: "Paid", fulfilled: "Fulfilled", cancelled: "Cancelled" };
 
-export default async function OrderPage(props: { params: Promise<{ id: string }>; searchParams: Promise<{ error?: string; saved?: string; emailed?: string }> }) {
+export default async function OrderPage(props: { params: Promise<{ id: string }>; searchParams: Promise<{ error?: string; saved?: string; emailed?: string; restocked?: string }> }) {
   const params = await props.params;
   const searchParams = await props.searchParams;
   const db = await adminDb();
@@ -26,6 +26,9 @@ export default async function OrderPage(props: { params: Promise<{ id: string }>
       <Notice searchParams={searchParams} />
       {searchParams.emailed === "1" && (
         <p role="status" className="-mt-3 mb-6 text-sm text-gold-text">{o.email} has been emailed that the order is on its way.</p>
+      )}
+      {searchParams.restocked === "1" && (
+        <p role="status" className="-mt-3 mb-6 text-sm text-gold-text">Order cancelled and its items put back in stock. Remember to refund the customer in Square if you have not already.</p>
       )}
       {searchParams.emailed === "0" && (
         <p role="alert" className="-mt-3 mb-6 text-sm text-red-800">The “on its way” email could not be sent. Check the email settings, or write to {o.email} directly.</p>
@@ -69,7 +72,7 @@ export default async function OrderPage(props: { params: Promise<{ id: string }>
         <p className="text-sm opacity-70">Placed {new Date(o.created_at).toLocaleString("en-US")}</p>
       </Card>
 
-      <Card title="Status" hint="Paid is set automatically when Square confirms the payment. Cancelling a paid order does not put stock back; adjust it under the product’s variants.">
+      <Card title="Status" hint="Paid is set automatically when Square confirms the payment. Cancelling a paid or sent order puts its stock back automatically. It does not refund the customer: refund in Square first.">
         <p className="mb-4">Current status: <strong>{labels[o.status]}</strong></p>
         {next[o.status].length > 0 && (
           <form action={setOrderStatus.bind(null, o.id)} className="max-w-xl space-y-4">

@@ -2,12 +2,13 @@
 
 import { adminDb } from "@/lib/auth";
 import { sendShippedEmail } from "@/lib/email/order-emails";
-import { fail, saved, stamp, str } from "../_lib";
+import { fail, refreshPublic, saved, stamp, str } from "../_lib";
 import { redirect } from "next/navigation";
 
 // Orders become Paid only through the Square webhook, which also reduces
 // stock. Dorée can mark a paid order Fulfilled (or back to Paid), and can
-// cancel any order. She cannot mark a pending order paid by hand.
+// cancel any order (a paid or sent one gets its stock back). She cannot mark
+// a pending order paid by hand.
 const allowed: Record<string, string[]> = {
   pending: ["cancelled"],
   paid: ["fulfilled", "cancelled"],
@@ -22,6 +23,14 @@ export async function setOrderStatus(id: string, fd: FormData) {
   const { data: order } = await db.from("orders").select("status").eq("id", id).maybeSingle();
   if (!order) fail("/admin/orders", "Order not found.");
   if (!(allowed[order.status] ?? []).includes(next)) fail(path, `An order that is ${order.status} cannot be changed to ${next}.`);
+  if (next === "cancelled") {
+    // One database step: cancels and, for a paid or sent order, puts the stock
+    // back and gives back the discount code's use.
+    const { data: result, error } = await db.rpc("cancel_order", { p_order_id: id });
+    if (error) fail(path, error.message);
+    refreshPublic(); // stock changed, so "Sold out" labels may change
+    redirect(`${path}?saved=1${result === "restocked" ? "&restocked=1" : ""}&${stamp()}`);
+  }
   const { error } = await db.from("orders").update({ status: next }).eq("id", id);
   if (error) fail(path, error.message);
 
