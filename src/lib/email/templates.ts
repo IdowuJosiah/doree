@@ -1,4 +1,5 @@
 import { siteConfig } from "../config";
+import { uspsTrackingUrl } from "../tracking";
 import { formatPrice } from "../format";
 
 // Emails use inline styles and tables because email clients ignore most CSS.
@@ -14,6 +15,8 @@ export type EmailOrder = {
   /** Cents off the subtotal from a discount code; 0 when none. */
   discount?: number;
   discountCode?: string | null;
+  /** USPS tracking number, once Dorée has entered it. */
+  trackingNumber?: string | null;
   shippingFee: number;
   total: number;
   items: { name: string; price: number; quantity: number }[];
@@ -136,6 +139,9 @@ export function orderShipped(order: EmailOrder, siteUrl: string, message = ""): 
     `<p style="margin:0 0 8px;font-size:14px;letter-spacing:2px;text-transform:uppercase;color:${GOLD_TEXT};">Order #${order.number}</p>
 <h1 style="margin:0 0 16px;font-size:26px;color:${GOLD_TEXT};">It's on its way, ${escapeHtml(firstName)}</h1>
 <p style="margin:0 0 24px;font-size:17px;line-height:1.6;">Your order has been sent. We hope you love it.</p>
+${order.trackingNumber ? `<p style="margin:0 0 4px;font-size:14px;letter-spacing:2px;text-transform:uppercase;color:${GOLD_TEXT};">USPS tracking number</p>
+<p style="margin:0 0 16px;font-size:18px;letter-spacing:1px;">${escapeHtml(order.trackingNumber)}</p>
+<p style="margin:0 0 28px;"><a href="${escapeHtml(uspsTrackingUrl(order.trackingNumber))}" style="display:inline-block;background:${GOLD};color:${INK};text-decoration:none;padding:12px 28px;font-size:14px;letter-spacing:2px;text-transform:uppercase;">Track your package</a></p>` : ""}
 ${note ? `<p style="margin:0 0 24px;padding:16px;background:${CREAM};border-left:3px solid ${GOLD};font-size:16px;line-height:1.6;white-space:pre-wrap;">${escapeHtml(note)}</p>` : ""}
 ${itemsTable(order)}
 <p style="margin:24px 0 4px;font-size:14px;letter-spacing:2px;text-transform:uppercase;color:${GOLD_TEXT};">Delivering to</p>
@@ -147,6 +153,7 @@ ${siteUrl ? `<p style="margin:28px 0 0;"><a href="${escapeHtml(siteUrl)}/guides/
     `It's on its way, ${firstName}.`,
     "",
     `Your ${siteConfig.name} order #${order.number} has been sent. We hope you love it.`,
+    ...(order.trackingNumber ? ["", `USPS tracking number: ${order.trackingNumber}`, `Track your package: ${uspsTrackingUrl(order.trackingNumber)}`] : []),
     ...(note ? ["", note] : []),
     "",
     itemsText(order),

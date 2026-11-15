@@ -46,6 +46,14 @@ describe("email templates", () => {
     expect(html).toContain("Austin, TX 78701");
   });
 
+  it("adds a USPS Track your package button when there is a tracking number", () => {
+    const { html, text } = orderShipped({ ...order, trackingNumber: "9400111899223197428490" }, "", "");
+    expect(html).toContain("Track your package");
+    expect(html).toContain("https://tools.usps.com/go/TrackConfirmAction?tLabels=9400111899223197428490");
+    expect(text).toContain("USPS tracking number: 9400111899223197428490");
+    expect(orderShipped(order, "", "").html).not.toContain("Track your package");
+  });
+
   it("leaves the note out when there is none", () => {
     const { html, text } = orderShipped(order, "", "   ");
     expect(html).not.toContain("border-left");

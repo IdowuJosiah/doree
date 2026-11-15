@@ -12,6 +12,8 @@ export const LIMITS = {
   payPerOrder: { max: 5, windowSeconds: 60 * 60 },
   contact: { max: 5, windowSeconds: 60 * 60 },
   subscribe: { max: 10, windowSeconds: 60 * 60 },
+  // Looking up an order on the Track my order page.
+  track: { max: 10, windowSeconds: 10 * 60 },
 } as const;
 
 export const TOO_MANY = "Too many attempts. Please wait a few minutes and try again.";

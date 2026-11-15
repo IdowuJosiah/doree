@@ -12,6 +12,7 @@ const help = [
   { href: "/guides", label: "Care and guides" },
   { href: "/policies/shipping", label: "Shipping" },
   { href: "/policies/returns", label: "Returns" },
+  { href: "/track", label: "Track my order" },
   { href: "/contact", label: "Contact" },
 ];
 

@@ -3,8 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { adminDb } from "@/lib/auth";
 import { formatPrice } from "@/lib/format";
-import { Card, Notice, Save, Small, TextArea } from "../../_components/ui";
-import { saveOrderNote, setOrderStatus } from "../actions";
+import { Card, Check, Field, Notice, Save, Small, TextArea } from "../../_components/ui";
+import { saveOrderNote, saveTracking, setOrderStatus } from "../actions";
+import { uspsTrackingUrl } from "@/lib/tracking";
 
 export const metadata: Metadata = { title: "Order" };
 
@@ -83,17 +84,36 @@ export default async function OrderPage(props: { params: Promise<{ id: string }>
               </select>
             </div>
             {o.status === "paid" && (
-              <div>
-                <TextArea label="Message to the customer (optional)" name="customer_message" rows={3} />
-                <p className="mt-1 text-xs opacity-70">
-                  Marking the order Fulfilled emails {o.email} that it is on its way. Anything written here, such as a tracking number, is included in that email.
-                </p>
-              </div>
+              <>
+                <Field label="USPS tracking number (optional)" name="tracking_number" defaultValue={o.tracking_number ?? ""} hint="From the USPS label or receipt. Customers get a Track your package button." />
+                <div>
+                  <TextArea label="Message to the customer (optional)" name="customer_message" rows={3} />
+                  <p className="mt-1 text-xs opacity-70">
+                    Marking the order Fulfilled emails {o.email} that it is on its way, with the tracking link and anything written here.
+                  </p>
+                </div>
+              </>
             )}
             <Small>Update status</Small>
           </form>
         )}
       </Card>
+
+      {o.status === "fulfilled" && (
+        <Card title="USPS tracking" hint="Add or correct the tracking number at any time. Customers see it in their emails, under My orders and on the Track my order page.">
+          {o.tracking_number && (
+            <p className="mb-4 text-sm">
+              Current: <strong className="tracking-wide">{o.tracking_number}</strong>{" "}
+              <a href={uspsTrackingUrl(o.tracking_number)} target="_blank" rel="noopener noreferrer" className="text-link">Open on USPS ↗</a>
+            </p>
+          )}
+          <form action={saveTracking.bind(null, o.id)} className="max-w-xl space-y-4">
+            <Field label="USPS tracking number" name="tracking_number" defaultValue={o.tracking_number ?? ""} hint="Leave empty and save to remove it." />
+            <Check label="Email the customer the tracking link" name="email_customer" defaultChecked={!o.tracking_number} />
+            <Small>Save tracking</Small>
+          </form>
+        </Card>
+      )}
 
       <Card title="Private note" hint="Only visible here, never to the customer.">
         <form action={saveOrderNote.bind(null, o.id)} className="max-w-xl space-y-4">

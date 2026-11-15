@@ -2,6 +2,7 @@
 
 import { adminDb } from "@/lib/auth";
 import { sendShippedEmail } from "@/lib/email/order-emails";
+import { cleanTrackingNumber } from "@/lib/tracking";
 import { fail, refreshPublic, saved, stamp, str } from "../_lib";
 import { redirect } from "next/navigation";
 
@@ -31,7 +32,16 @@ export async function setOrderStatus(id: string, fd: FormData) {
     refreshPublic(); // stock changed, so "Sold out" labels may change
     redirect(`${path}?saved=1${result === "restocked" ? "&restocked=1" : ""}&${stamp()}`);
   }
-  const { error } = await db.from("orders").update({ status: next }).eq("id", id);
+  // A USPS tracking number can be given when marking the order Fulfilled.
+  let tracking: string | undefined;
+  if (next === "fulfilled" && str(fd, "tracking_number")) {
+    try {
+      tracking = cleanTrackingNumber(str(fd, "tracking_number"));
+    } catch (e) {
+      fail(path, (e as Error).message);
+    }
+  }
+  const { error } = await db.from("orders").update({ status: next, ...(tracking ? { tracking_number: tracking } : {}) }).eq("id", id);
   if (error) fail(path, error.message);
 
   // Marking a paid order Fulfilled emails the customer that it is on its way.
@@ -47,4 +57,23 @@ export async function saveOrderNote(id: string, fd: FormData) {
   const { error } = await db.from("orders").update({ note: str(fd, "note") }).eq("id", id);
   if (error) fail(`/admin/orders/${id}`, error.message);
   saved(`/admin/orders/${id}`);
+}
+
+/** Adds or corrects the USPS tracking number, optionally emailing the customer. */
+export async function saveTracking(id: string, fd: FormData) {
+  const db = await adminDb();
+  const path = `/admin/orders/${id}`;
+  let tracking = "";
+  try {
+    tracking = cleanTrackingNumber(str(fd, "tracking_number"));
+  } catch (e) {
+    fail(path, (e as Error).message);
+  }
+  const { error } = await db.from("orders").update({ tracking_number: tracking || null }).eq("id", id);
+  if (error) fail(path, error.message);
+  if (tracking && fd.get("email_customer") === "on") {
+    const sent = await sendShippedEmail(id, "");
+    redirect(`${path}?saved=1&emailed=${sent ? "1" : "0"}&${stamp()}`);
+  }
+  saved(path);
 }

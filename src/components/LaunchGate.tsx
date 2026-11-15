@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { createBrowserSupabase } from "@/lib/supabase/browser";
 
 // Pages that stay reachable while the teaser is on (linked from it).
-const OPEN = ["/policies/"];
+const OPEN = ["/policies/", "/track"];
 
 /**
  * Shows the teaser instead of the shop until launch. A signed-in admin sees

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { formatPrice } from "@/lib/format";
 import { createSessionClient } from "@/lib/supabase/server";
+import { uspsTrackingUrl } from "@/lib/tracking";
 
 export const metadata: Metadata = { title: "Orders", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -17,7 +18,7 @@ export default async function OrdersPage() {
   // Row-level security returns only this customer's orders.
   const { data } = await (await createSessionClient())
     .from("orders")
-    .select("id, number, created_at, total, status, order_items(name, quantity)")
+    .select("id, number, created_at, total, status, tracking_number, order_items(name, quantity)")
     .neq("status", "pending")
     .order("created_at", { ascending: false });
   const orders = data ?? [];
@@ -43,6 +44,11 @@ export default async function OrdersPage() {
               <div className="sm:text-right">
                 <p>{formatPrice(o.total)}</p>
                 <p className="label mt-1 text-gold-text">{labels[o.status] ?? o.status}</p>
+                {o.tracking_number && o.status !== "cancelled" && (
+                  <a href={uspsTrackingUrl(o.tracking_number)} target="_blank" rel="noopener noreferrer" className="text-link mt-2 inline-block text-sm">
+                    Track package ↗
+                  </a>
+                )}
               </div>
             </li>
           ))}

@@ -22,6 +22,7 @@ async function loadOrder(orderId: string): Promise<EmailOrder | null> {
     subtotal: o.subtotal,
     discount: o.discount_amount ?? 0,
     discountCode: o.discount_code ?? null,
+    trackingNumber: o.tracking_number ?? null,
     shippingFee: o.shipping_fee,
     total: o.total,
     items: o.order_items ?? [],
@@ -50,7 +51,7 @@ export async function sendShippedEmail(orderId: string, message: string) {
     to: order.email,
     email: orderShipped(order, siteUrl(), message),
     replyTo: notifyAddress() || undefined,
-    idempotencyKey: `order-${order.id}-shipped`,
+    idempotencyKey: `order-${order.id}-shipped-${order.trackingNumber ?? "none"}`,
   });
 }
 
