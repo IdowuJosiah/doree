@@ -1,8 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { CheckoutError, discountFor, priceOrder, shippingFeeFor, type DiscountRecord, type VariantRecord } from "./pricing";
+import { CheckoutError, discountFor, pickupAllowed, priceOrder, shippingFeeFor, type DiscountRecord, type VariantRecord } from "./pricing";
 import type { ShippingSettings } from "./data/site";
 
-const settings: ShippingSettings = { fixedFeeStates: ["NY", "NJ"], fixedFee: 800, otherFee: 1500 };
+const settings: ShippingSettings = {
+  fixedFeeStates: ["NY", "NJ"],
+  fixedFee: 800,
+  otherFee: 1500,
+  pickupEnabled: true,
+  pickupZips: ["77449", "77406", "77407"],
+  pickupNote: "",
+};
 
 const variant = (id: string, over: Partial<VariantRecord["product"]> = {}, stock = 5): VariantRecord => ({
   id,
@@ -97,5 +104,20 @@ describe("discount codes", () => {
 
   it("an entered code that does not exist stops checkout with a message", () => {
     expect(() => priceOrder([{ variantId: "a", quantity: 1 }], [variant("a")], "TX", settings, null)).toThrow(CheckoutError);
+  });
+});
+
+describe("local pickup", () => {
+  it("is allowed only for listed ZIP codes, and ZIP+4 works", () => {
+    expect(pickupAllowed("77449", settings)).toBe(true);
+    expect(pickupAllowed(" 77406-1234 ", settings)).toBe(true);
+    expect(pickupAllowed("77001", settings)).toBe(false);
+    expect(pickupAllowed("77449", { ...settings, pickupEnabled: false })).toBe(false);
+  });
+
+  it("has no shipping fee", () => {
+    const priced = priceOrder([{ variantId: "a", quantity: 1 }], [variant("a")], "TX", settings, undefined, true);
+    expect(priced.shippingFee).toBe(0);
+    expect(priced.total).toBe(6800);
   });
 });

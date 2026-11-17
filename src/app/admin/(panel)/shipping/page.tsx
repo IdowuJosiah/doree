@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { adminDb } from "@/lib/auth";
 import { centsToDollars } from "@/lib/format";
 import { US_STATES } from "@/lib/us-states";
-import { toShippingSettings } from "@/lib/data/site";
-import { Card, Field, Notice, Save } from "../_components/ui";
+import { toShippingSettings, type ShippingRow } from "@/lib/data/site";
+import { Card, Check, Field, Notice, Save, TextArea } from "../_components/ui";
 import { saveShipping } from "./actions";
 
 export const metadata: Metadata = { title: "Shipping" };
@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "Shipping" };
 export default async function ShippingPage(props: { searchParams: Promise<{ error?: string; saved?: string }> }) {
   const searchParams = await props.searchParams;
   const db = await adminDb();
-  const { data } = await db.from("shipping_settings").select("fixed_fee_states, fixed_fee, other_fee").eq("id", 1).maybeSingle();
+  const { data } = await db.from("shipping_settings").select("*").eq("id", 1).maybeSingle<ShippingRow>();
   const s = toShippingSettings(data);
   const selected = new Set(s.fixedFeeStates);
 
@@ -37,6 +37,14 @@ export default async function ShippingPage(props: { searchParams: Promise<{ erro
               </li>
             ))}
           </ul>
+        </Card>
+        <Card title="Local pickup" hint="Free pickup instead of shipping. Only customers whose ZIP code is listed can choose it at checkout. Pickup orders are marked Pickup under Orders.">
+          <div className="max-w-xl space-y-4">
+            <Check label="Offer local pickup at checkout" name="pickup_enabled" defaultChecked={Boolean(data?.pickup_enabled ?? true)} />
+            <Field label="Pickup ZIP codes" name="pickup_zips" defaultValue={(data?.pickup_zips ?? []).join(", ")} hint="Five-digit ZIP codes, separated by commas." />
+            <TextArea label="Note shown under Local pickup at checkout" name="pickup_note" rows={3} defaultValue={data?.pickup_note ?? ""} />
+            {!s.pickupEnabled && data?.pickup_enabled && <p className="text-sm text-red-800">Add at least one ZIP code, or pickup will not show at checkout.</p>}
+          </div>
         </Card>
         <Save />
       </form>

@@ -35,6 +35,8 @@ export function CheckoutForm({ shipping, square }: { shipping: ShippingSettings;
   const { items, subtotal, ready, clear } = useCart();
   const router = useRouter();
   const [state, setState] = useState("");
+  const [method, setMethod] = useState<"ship" | "pickup">("ship");
+  const pickup = method === "pickup";
   const [order, setOrder] = useState<Order | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -51,7 +53,7 @@ export function CheckoutForm({ shipping, square }: { shipping: ShippingSettings;
     );
   }
 
-  const estimateFee = state ? shippingFeeFor(state, shipping) : null;
+  const estimateFee = pickup ? 0 : state ? shippingFeeFor(state, shipping) : null;
   const shown = order ?? { subtotal, discount: 0, discountCode: null, shippingFee: estimateFee ?? 0, total: subtotal + (estimateFee ?? 0) };
   const paymentsConfigured = Boolean(square.appId && square.locationId);
 
@@ -62,7 +64,10 @@ export function CheckoutForm({ shipping, square }: { shipping: ShippingSettings;
     const body = {
       email: f.get("email"),
       name: f.get("name"),
-      address: { line1: f.get("line1"), line2: f.get("line2") || undefined, city: f.get("city"), state: f.get("state"), postalCode: f.get("postalCode") },
+      fulfillment: method,
+      address: pickup
+        ? { postalCode: f.get("postalCode") }
+        : { line1: f.get("line1"), line2: f.get("line2") || undefined, city: f.get("city"), state: f.get("state"), postalCode: f.get("postalCode") },
       discountCode: String(f.get("discountCode") ?? "").trim() || undefined,
       items: items.map((i) => ({ variantId: i.variantId, quantity: i.quantity })),
     };
@@ -114,7 +119,10 @@ export function CheckoutForm({ shipping, square }: { shipping: ShippingSettings;
             {shown.discount > 0 && (
               <div className="flex justify-between text-gold-text"><dt>Discount ({shown.discountCode})</dt><dd>−{formatPrice(shown.discount)}</dd></div>
             )}
-            <div className="flex justify-between"><dt>Shipping</dt><dd>{order || estimateFee !== null ? formatPrice(shown.shippingFee) : "Choose your state"}</dd></div>
+            <div className="flex justify-between">
+              <dt>{pickup ? "Local pickup" : "Shipping"}</dt>
+              <dd>{pickup ? "Free" : order || estimateFee !== null ? formatPrice(shown.shippingFee) : "Choose your state"}</dd>
+            </div>
             <div className="flex justify-between pt-2 text-base font-medium"><dt>Total</dt><dd>{formatPrice(shown.total)}</dd></div>
           </dl>
         </div>
@@ -133,21 +141,51 @@ export function CheckoutForm({ shipping, square }: { shipping: ShippingSettings;
               <Input label="Email" name="email" type="email" autoComplete="email" />
             </div>
             <div className="space-y-4">
-              <h2 className="flex items-center font-display text-2xl"><Step n={2} />Shipping address</h2>
-              <Input label="Full name" name="name" autoComplete="name" />
-              <Input label="Address" name="line1" autoComplete="address-line1" />
-              <Input label="Apartment, suite" name="line2" autoComplete="address-line2" required={false} />
-              <div className="grid gap-4 sm:grid-cols-3">
-                <Input label="City" name="city" autoComplete="address-level2" />
-                <div>
-                  <label htmlFor="state" className="label mb-1 block">State</label>
-                  <select id="state" name="state" required autoComplete="address-level1" value={state} onChange={(e) => setState(e.target.value)} className="field">
-                    <option value="" disabled>Choose…</option>
-                    {US_STATES.map((s) => <option key={s.code} value={s.code}>{s.name}</option>)}
-                  </select>
+              <h2 className="flex items-center font-display text-2xl"><Step n={2} />{shipping.pickupEnabled ? "Delivery" : "Shipping address"}</h2>
+              {shipping.pickupEnabled && (
+                <div role="radiogroup" aria-label="Delivery method" className="grid gap-3 sm:grid-cols-2">
+                  {(["ship", "pickup"] as const).map((m) => (
+                    <label key={m} className={`flex min-h-[44px] cursor-pointer items-start gap-3 border p-4 ${method === m ? "border-gold bg-cream-deep" : "border-line"}`}>
+                      <input type="radio" name="fulfillment" value={m} checked={method === m} onChange={() => setMethod(m)} className="mt-1 h-4 w-4 accent-[var(--gold-text)]" />
+                      <span>
+                        <span className="block font-medium">{m === "ship" ? "Ship to me" : "Local pickup (Free)"}</span>
+                        <span className="block text-sm opacity-80">{m === "ship" ? "Delivered by USPS." : "Katy and Richmond area."}</span>
+                      </span>
+                    </label>
+                  ))}
                 </div>
-                <Input label="ZIP code" name="postalCode" autoComplete="postal-code" />
-              </div>
+              )}
+              {pickup && (
+                <div className="border-l-2 border-gold bg-cream-deep p-4 text-sm leading-relaxed">
+                  <p>{shipping.pickupNote}</p>
+                  <p className="mt-2">
+                    See the <Link href="/policies/shipping#local-pickup" target="_blank" className="text-link">Local Pickup policy</Link> on our Shipping Policy page.
+                  </p>
+                </div>
+              )}
+              <Input label="Full name" name="name" autoComplete="name" />
+              {pickup ? (
+                <div className="max-w-xs">
+                  <Input label="Your ZIP code" name="postalCode" autoComplete="postal-code" />
+                  <p className="mt-1 text-xs opacity-70">Pickup is for ZIP codes {shipping.pickupZips.join(", ")}.</p>
+                </div>
+              ) : (
+                <>
+                  <Input label="Address" name="line1" autoComplete="address-line1" />
+                  <Input label="Apartment, suite" name="line2" autoComplete="address-line2" required={false} />
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <Input label="City" name="city" autoComplete="address-level2" />
+                    <div>
+                      <label htmlFor="state" className="label mb-1 block">State</label>
+                      <select id="state" name="state" required autoComplete="address-level1" value={state} onChange={(e) => setState(e.target.value)} className="field">
+                        <option value="" disabled>Choose…</option>
+                        {US_STATES.map((s) => <option key={s.code} value={s.code}>{s.name}</option>)}
+                      </select>
+                    </div>
+                    <Input label="ZIP code" name="postalCode" autoComplete="postal-code" />
+                  </div>
+                </>
+              )}
             </div>
             <div className="max-w-xs">
               <label htmlFor="discountCode" className="label mb-1 block">Discount code<span className="ml-1 normal-case tracking-normal opacity-60">(optional)</span></label>

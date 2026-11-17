@@ -1,7 +1,7 @@
 import "server-only";
 import { z } from "zod";
-import { CheckoutError, priceOrder, type DiscountRecord, type VariantRecord } from "./pricing";
-import { toShippingSettings } from "./data/site";
+import { CheckoutError, pickupAllowed, priceOrder, zip5, type DiscountRecord, type VariantRecord } from "./pricing";
+import { toShippingSettings, type ShippingRow } from "./data/site";
 import { createServiceClient } from "./supabase/service";
 import { isUsState } from "./us-states";
 
@@ -13,14 +13,21 @@ export const checkoutSchema = z.object({
     .max(50),
   email: z.string().trim().email().max(254),
   name: z.string().trim().min(1).max(120),
+  fulfillment: z.enum(["ship", "pickup"]).default("ship"),
+  // Local pickup needs only the ZIP code (to check the pickup area).
   address: z.object({
-    line1: z.string().trim().min(1).max(200),
+    line1: z.string().trim().max(200).default(""),
     line2: z.string().trim().max(200).optional(),
-    city: z.string().trim().min(1).max(100),
-    state: z.string().trim().toUpperCase().refine(isUsState, "Choose a valid state"),
+    city: z.string().trim().max(100).default(""),
+    state: z.string().trim().toUpperCase().default(""),
     postalCode: z.string().trim().min(3).max(12),
   }),
   discountCode: z.string().trim().toUpperCase().max(40).optional(),
+}).superRefine((v, ctx) => {
+  if (v.fulfillment === "pickup") return;
+  if (!v.address.line1) ctx.addIssue({ code: "custom", path: ["address", "line1"], message: "Enter your address" });
+  if (!v.address.city) ctx.addIssue({ code: "custom", path: ["address", "city"], message: "Enter your city" });
+  if (!isUsState(v.address.state)) ctx.addIssue({ code: "custom", path: ["address", "state"], message: "Choose a valid state" });
 });
 
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
@@ -43,10 +50,22 @@ export async function createPendingOrder(input: CheckoutInput, customerId: strin
 
   const { data: shippingRow, error: shippingError } = await db
     .from("shipping_settings")
-    .select("fixed_fee_states, fixed_fee, other_fee")
+    .select("*")
     .eq("id", 1)
-    .maybeSingle();
+    .maybeSingle<ShippingRow>();
   if (shippingError) throw shippingError;
+  const shipping = toShippingSettings(shippingRow);
+
+  const pickup = input.fulfillment === "pickup";
+  if (pickup && !pickupAllowed(input.address.postalCode, shipping)) {
+    throw new CheckoutError(
+      shipping.pickupEnabled
+        ? `Local pickup is only for ZIP codes ${shipping.pickupZips.join(", ")}. Choose shipping, or contact us if you are nearby.`
+        : "Local pickup is not available right now. Please choose shipping.",
+    );
+  }
+  // Pickup orders are in Texas; only the ZIP code is kept as their address.
+  const address = pickup ? { postalCode: zip5(input.address.postalCode), state: "TX" } : input.address;
 
   // undefined = no code entered; null = entered but not found.
   let discount: DiscountRecord | null | undefined;
@@ -61,7 +80,7 @@ export async function createPendingOrder(input: CheckoutInput, customerId: strin
     discount = code;
   }
 
-  const priced = priceOrder(input.items, variants, input.address.state, toShippingSettings(shippingRow), discount);
+  const priced = priceOrder(input.items, variants, address.state, shipping, discount, pickup);
 
   const { data: order, error: orderError } = await db
     .from("orders")
@@ -69,8 +88,10 @@ export async function createPendingOrder(input: CheckoutInput, customerId: strin
       customer_id: customerId,
       email: input.email,
       name: input.name,
-      address: input.address,
-      state: input.address.state,
+      address,
+      state: address.state,
+      // Only sent for pickup, so shipping keeps working before migration 0011.
+      ...(pickup ? { fulfillment: "pickup" } : {}),
       subtotal: priced.subtotal,
       // Only sent when a code was used, so checkout keeps working before the
       // discounts migration has added these columns.

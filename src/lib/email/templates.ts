@@ -17,6 +17,8 @@ export type EmailOrder = {
   discountCode?: string | null;
   /** USPS tracking number, once Dorée has entered it. */
   trackingNumber?: string | null;
+  /** Local pickup instead of shipping. */
+  pickup?: boolean;
   shippingFee: number;
   total: number;
   items: { name: string; price: number; quantity: number }[];
@@ -35,6 +37,18 @@ export const escapeHtml = (s: string) =>
 
 const addressLines = (a: EmailOrder["address"]): string[] =>
   [a.line1 ?? "", a.line2 ?? "", [a.city, a.state].filter(Boolean).join(", ") + (a.postalCode ? ` ${a.postalCode}` : "")].filter((l) => l.trim());
+
+const PICKUP_NEXT = "We'll email you the pickup location and time once your order is processed and ready for pickup.";
+
+const heading = (label: string) => `<p style="margin:24px 0 4px;font-size:14px;letter-spacing:2px;text-transform:uppercase;color:${GOLD_TEXT};">${label}</p>`;
+
+/** "Delivering to" with the address, or the local pickup note. */
+function deliveryHtml(order: EmailOrder) {
+  if (order.pickup) return `${heading("Local pickup")}<p style="margin:0;font-size:16px;line-height:1.5;">${escapeHtml(PICKUP_NEXT)}</p>`;
+  return `${heading("Delivering to")}<p style="margin:0;font-size:16px;line-height:1.5;">${[order.name, ...addressLines(order.address)].map(escapeHtml).join("<br>")}</p>`;
+}
+
+const deliveryText = (order: EmailOrder) => (order.pickup ? ["Local pickup:", PICKUP_NEXT] : ["Delivering to:", order.name, ...addressLines(order.address)]);
 
 function layout(title: string, body: string) {
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${escapeHtml(title)}</title></head>
@@ -58,7 +72,7 @@ function itemsTable(order: EmailOrder) {
     `<tr><td style="padding:4px 0;font-size:16px;${bold ? "font-weight:bold;" : ""}">${label}</td><td style="padding:4px 0;font-size:16px;text-align:right;${bold ? "font-weight:bold;" : ""}">${value}</td></tr>`;
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows}
 <tr><td colspan="2" style="height:8px;"></td></tr>
-${line("Subtotal", formatPrice(order.subtotal))}${order.discount ? line(`Discount (${escapeHtml(order.discountCode ?? "")})`, `−${formatPrice(order.discount)}`) : ""}${line("Shipping", formatPrice(order.shippingFee))}${line("Total", formatPrice(order.total), true)}</table>`;
+${line("Subtotal", formatPrice(order.subtotal))}${order.discount ? line(`Discount (${escapeHtml(order.discountCode ?? "")})`, `−${formatPrice(order.discount)}`) : ""}${order.pickup ? line("Local pickup", "Free") : line("Shipping", formatPrice(order.shippingFee))}${line("Total", formatPrice(order.total), true)}</table>`;
 }
 
 function itemsText(order: EmailOrder) {
@@ -67,14 +81,13 @@ function itemsText(order: EmailOrder) {
     "",
     `Subtotal  ${formatPrice(order.subtotal)}`,
     ...(order.discount ? [`Discount (${order.discountCode ?? ""})  -${formatPrice(order.discount)}`] : []),
-    `Shipping  ${formatPrice(order.shippingFee)}`,
+    order.pickup ? "Local pickup  Free" : `Shipping  ${formatPrice(order.shippingFee)}`,
     `Total     ${formatPrice(order.total)}`,
   ].join("\n");
 }
 
 export function customerConfirmation(order: EmailOrder, siteUrl: string): Email {
   const firstName = order.name.split(" ")[0] || "there";
-  const address = addressLines(order.address);
   const subject = `Your ${siteConfig.name} order #${order.number} is confirmed`;
   const html = layout(
     subject,
@@ -82,8 +95,7 @@ export function customerConfirmation(order: EmailOrder, siteUrl: string): Email 
 <h1 style="margin:0 0 16px;font-size:26px;color:${GOLD_TEXT};">Thank you, ${escapeHtml(firstName)}</h1>
 <p style="margin:0 0 24px;font-size:17px;line-height:1.6;">Your payment has been received and your order is confirmed. We will be in touch by email about delivery.</p>
 ${itemsTable(order)}
-<p style="margin:24px 0 4px;font-size:14px;letter-spacing:2px;text-transform:uppercase;color:${GOLD_TEXT};">Delivering to</p>
-<p style="margin:0;font-size:16px;line-height:1.5;">${[order.name, ...address].map(escapeHtml).join("<br>")}</p>
+${deliveryHtml(order)}
 ${siteUrl ? `<p style="margin:28px 0 0;"><a href="${escapeHtml(siteUrl)}/shop" style="display:inline-block;background:${GOLD};color:${INK};text-decoration:none;padding:12px 28px;font-size:14px;letter-spacing:2px;text-transform:uppercase;">Continue shopping</a></p>` : ""}
 <p style="margin:28px 0 0;font-size:15px;line-height:1.6;">Questions about your order? Just reply to this email.</p>`,
   );
@@ -94,9 +106,7 @@ ${siteUrl ? `<p style="margin:28px 0 0;"><a href="${escapeHtml(siteUrl)}/shop" s
     "",
     itemsText(order),
     "",
-    "Delivering to:",
-    order.name,
-    ...address,
+    ...deliveryText(order),
     "",
     "Questions about your order? Just reply to this email.",
   ].join("\n");
@@ -105,7 +115,7 @@ ${siteUrl ? `<p style="margin:28px 0 0;"><a href="${escapeHtml(siteUrl)}/shop" s
 
 export function newOrderAlert(order: EmailOrder, siteUrl: string): Email {
   const address = addressLines(order.address);
-  const subject = `New order #${order.number}: ${formatPrice(order.total)}`;
+  const subject = `New ${order.pickup ? "pickup " : ""}order #${order.number}: ${formatPrice(order.total)}`;
   const adminLink = siteUrl ? `${siteUrl}/admin/orders/${order.id}` : "";
   const html = layout(
     subject,
@@ -113,8 +123,10 @@ export function newOrderAlert(order: EmailOrder, siteUrl: string): Email {
 ${itemsTable(order)}
 <p style="margin:24px 0 4px;font-size:14px;letter-spacing:2px;text-transform:uppercase;color:${GOLD_TEXT};">Customer</p>
 <p style="margin:0;font-size:16px;line-height:1.5;">${escapeHtml(order.name)}<br><a href="mailto:${escapeHtml(order.email)}" style="color:${GOLD_TEXT};">${escapeHtml(order.email)}</a></p>
-<p style="margin:16px 0 4px;font-size:14px;letter-spacing:2px;text-transform:uppercase;color:${GOLD_TEXT};">Ship to</p>
-<p style="margin:0;font-size:16px;line-height:1.5;">${address.map(escapeHtml).join("<br>")}</p>
+${order.pickup
+    ? `${heading("Local pickup")}<p style="margin:0;font-size:16px;line-height:1.5;">Customer ZIP code: ${escapeHtml(order.address.postalCode ?? "")}. Email them the pickup location and time when it is ready (mark the order Fulfilled with a message).</p>`
+    : `<p style="margin:16px 0 4px;font-size:14px;letter-spacing:2px;text-transform:uppercase;color:${GOLD_TEXT};">Ship to</p>
+<p style="margin:0;font-size:16px;line-height:1.5;">${address.map(escapeHtml).join("<br>")}</p>`}
 ${adminLink ? `<p style="margin:28px 0 0;"><a href="${escapeHtml(adminLink)}" style="display:inline-block;background:${GOLD};color:${INK};text-decoration:none;padding:12px 28px;font-size:14px;letter-spacing:2px;text-transform:uppercase;">Open in admin</a></p>` : ""}`,
   );
   const text = [
@@ -123,7 +135,7 @@ ${adminLink ? `<p style="margin:28px 0 0;"><a href="${escapeHtml(adminLink)}" st
     itemsText(order),
     "",
     `Customer: ${order.name} <${order.email}>`,
-    `Ship to: ${address.join(", ")}`,
+    order.pickup ? `Local pickup (customer ZIP code ${order.address.postalCode ?? ""})` : `Ship to: ${address.join(", ")}`,
     adminLink ? `\nOpen in admin: ${adminLink}` : "",
   ].join("\n");
   return { subject, html, text };
@@ -131,7 +143,6 @@ ${adminLink ? `<p style="margin:28px 0 0;"><a href="${escapeHtml(adminLink)}" st
 
 export function orderShipped(order: EmailOrder, siteUrl: string, message = ""): Email {
   const firstName = order.name.split(" ")[0] || "there";
-  const address = addressLines(order.address);
   const subject = `Your ${siteConfig.name} order #${order.number} is on its way`;
   const note = message.trim();
   const html = layout(
@@ -144,8 +155,7 @@ ${order.trackingNumber ? `<p style="margin:0 0 4px;font-size:14px;letter-spacing
 <p style="margin:0 0 28px;"><a href="${escapeHtml(uspsTrackingUrl(order.trackingNumber))}" style="display:inline-block;background:${GOLD};color:${INK};text-decoration:none;padding:12px 28px;font-size:14px;letter-spacing:2px;text-transform:uppercase;">Track your package</a></p>` : ""}
 ${note ? `<p style="margin:0 0 24px;padding:16px;background:${CREAM};border-left:3px solid ${GOLD};font-size:16px;line-height:1.6;white-space:pre-wrap;">${escapeHtml(note)}</p>` : ""}
 ${itemsTable(order)}
-<p style="margin:24px 0 4px;font-size:14px;letter-spacing:2px;text-transform:uppercase;color:${GOLD_TEXT};">Delivering to</p>
-<p style="margin:0;font-size:16px;line-height:1.5;">${[order.name, ...address].map(escapeHtml).join("<br>")}</p>
+${deliveryHtml(order)}
 ${siteUrl ? `<p style="margin:28px 0 0;"><a href="${escapeHtml(siteUrl)}/guides/jewelry-care" style="display:inline-block;background:${GOLD};color:${INK};text-decoration:none;padding:12px 28px;font-size:14px;letter-spacing:2px;text-transform:uppercase;">Caring for your jewelry</a></p>` : ""}
 <p style="margin:28px 0 0;font-size:15px;line-height:1.6;">Questions about your order? Just reply to this email.</p>`,
   );
@@ -158,11 +168,37 @@ ${siteUrl ? `<p style="margin:28px 0 0;"><a href="${escapeHtml(siteUrl)}/guides/
     "",
     itemsText(order),
     "",
-    "Delivering to:",
-    order.name,
-    ...address,
+    ...deliveryText(order),
     "",
     "Questions about your order? Just reply to this email.",
+  ].join("\n");
+  return { subject, html, text };
+}
+
+/** Tells a local pickup customer their order is ready, with Dorée's message (location and time). */
+export function orderReadyForPickup(order: EmailOrder, siteUrl: string, message = ""): Email {
+  const firstName = order.name.split(" ")[0] || "there";
+  const subject = `Your ${siteConfig.name} order #${order.number} is ready for pickup`;
+  const note = message.trim();
+  const html = layout(
+    subject,
+    `<p style="margin:0 0 8px;font-size:14px;letter-spacing:2px;text-transform:uppercase;color:${GOLD_TEXT};">Order #${order.number}</p>
+<h1 style="margin:0 0 16px;font-size:26px;color:${GOLD_TEXT};">It's ready for you, ${escapeHtml(firstName)}</h1>
+<p style="margin:0 0 24px;font-size:17px;line-height:1.6;">Your order is ready for local pickup.${note ? " Here are the details:" : " We will be in touch with the pickup location and time."}</p>
+${note ? `<p style="margin:0 0 24px;padding:16px;background:${CREAM};border-left:3px solid ${GOLD};font-size:16px;line-height:1.6;white-space:pre-wrap;">${escapeHtml(note)}</p>` : ""}
+${itemsTable(order)}
+${siteUrl ? `<p style="margin:28px 0 0;"><a href="${escapeHtml(siteUrl)}/guides/jewelry-care" style="display:inline-block;background:${GOLD};color:${INK};text-decoration:none;padding:12px 28px;font-size:14px;letter-spacing:2px;text-transform:uppercase;">Caring for your jewelry</a></p>` : ""}
+<p style="margin:28px 0 0;font-size:15px;line-height:1.6;">Need a different time? Just reply to this email.</p>`,
+  );
+  const text = [
+    `It's ready for you, ${firstName}.`,
+    "",
+    `Your ${siteConfig.name} order #${order.number} is ready for local pickup.`,
+    ...(note ? ["", note] : ["We will be in touch with the pickup location and time."]),
+    "",
+    itemsText(order),
+    "",
+    "Need a different time? Just reply to this email.",
   ].join("\n");
   return { subject, html, text };
 }

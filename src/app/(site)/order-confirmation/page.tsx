@@ -28,6 +28,9 @@ export default async function OrderConfirmation(props: { searchParams: Promise<{
           <p className="script-line mt-3">Thank you</p>
           <PaymentStatus orderId={id} initialStatus={order.status} />
           <p className="mt-2">A confirmation will be sent to {order.email}.</p>
+          {order.fulfillment === "pickup" && (
+            <p className="mt-2">We&rsquo;ll email you the pickup location and time once your order is processed and ready for pickup.</p>
+          )}
           <div className="mt-10 border border-line p-6 text-left text-sm">
             <ul className="divide-y divide-line">
               {(order.order_items as Item[]).map((i, n) => (
@@ -39,7 +42,11 @@ export default async function OrderConfirmation(props: { searchParams: Promise<{
               {order.discount_amount > 0 && (
                 <div className="flex justify-between text-gold-text"><dt>Discount ({order.discount_code})</dt><dd>−{formatPrice(order.discount_amount)}</dd></div>
               )}
-              <div className="flex justify-between"><dt>Shipping</dt><dd>{formatPrice(order.shipping_fee)}</dd></div>
+              {order.fulfillment === "pickup" ? (
+                <div className="flex justify-between"><dt>Local pickup</dt><dd>Free</dd></div>
+              ) : (
+                <div className="flex justify-between"><dt>Shipping</dt><dd>{formatPrice(order.shipping_fee)}</dd></div>
+              )}
               <div className="flex justify-between text-base font-medium"><dt>Total</dt><dd>{formatPrice(order.total)}</dd></div>
             </dl>
           </div>

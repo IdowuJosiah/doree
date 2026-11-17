@@ -18,7 +18,7 @@ export default async function OrdersPage() {
   // Row-level security returns only this customer's orders.
   const { data } = await (await createSessionClient())
     .from("orders")
-    .select("id, number, created_at, total, status, tracking_number, order_items(name, quantity)")
+    .select("id, number, created_at, total, status, tracking_number, fulfillment, order_items(name, quantity)")
     .neq("status", "pending")
     .order("created_at", { ascending: false });
   const orders = data ?? [];
@@ -43,7 +43,8 @@ export default async function OrdersPage() {
               </div>
               <div className="sm:text-right">
                 <p>{formatPrice(o.total)}</p>
-                <p className="label mt-1 text-gold-text">{labels[o.status] ?? o.status}</p>
+                <p className="label mt-1 text-gold-text">{o.fulfillment === "pickup" && o.status === "fulfilled" ? "Ready for pickup" : labels[o.status] ?? o.status}</p>
+                {o.fulfillment === "pickup" && o.status === "paid" && <p className="mt-1 text-sm opacity-70">Local pickup</p>}
                 {o.tracking_number && o.status !== "cancelled" && (
                   <a href={uspsTrackingUrl(o.tracking_number)} target="_blank" rel="noopener noreferrer" className="text-link mt-2 inline-block text-sm">
                     Track package ↗

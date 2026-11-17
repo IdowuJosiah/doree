@@ -12,7 +12,7 @@ const labels: Record<string, string> = { pending: "Pending", paid: "Paid", fulfi
 export default async function OrdersPage(props: { searchParams: Promise<{ q?: string; status?: string }> }) {
   const searchParams = await props.searchParams;
   const db = await adminDb();
-  let query = db.from("orders").select("id, number, name, email, total, status, created_at").order("created_at", { ascending: false }).limit(200);
+  let query = db.from("orders").select("id, number, name, email, total, status, created_at, fulfillment").order("created_at", { ascending: false }).limit(200);
   if (searchParams.status && statuses.includes(searchParams.status)) query = query.eq("status", searchParams.status);
   const q = searchParams.q?.replace(/[%,()]/g, " ").trim();
   if (q) query = /^\d+$/.test(q) ? query.eq("number", Number(q)) : query.or(`email.ilike.%${q}%,name.ilike.%${q}%`);
@@ -47,7 +47,10 @@ export default async function OrdersPage(props: { searchParams: Promise<{ q?: st
                 <td>{new Date(o.created_at).toLocaleDateString("en-US")}</td>
                 <td>{o.name || o.email}<br /><span className="opacity-70">{o.email}</span></td>
                 <td>{formatPrice(o.total)}</td>
-                <td>{labels[o.status]}</td>
+                <td>
+                  {labels[o.status]}
+                  {o.fulfillment === "pickup" && <span className="label mt-1 block text-gold-text">Pickup</span>}
+                </td>
               </tr>
             ))}
           </tbody>

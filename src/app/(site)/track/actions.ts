@@ -14,6 +14,7 @@ export type TrackedOrder = {
   items: { name: string; quantity: number }[];
   trackingNumber: string | null;
   trackingUrl: string | null;
+  pickup: boolean;
 };
 export type TrackState = { status: "idle" | "found" | "error"; message: string; order?: TrackedOrder };
 
@@ -32,7 +33,7 @@ export async function trackOrder(_prev: TrackState, formData: FormData): Promise
   try {
     const { data, error } = await createServiceClient()
       .from("orders")
-      .select("number, status, email, created_at, tracking_number, order_items(name, quantity)")
+      .select("number, status, email, created_at, tracking_number, fulfillment, order_items(name, quantity)")
       .eq("number", Number(parsed.data.number))
       .neq("status", "pending")
       .maybeSingle();
@@ -50,6 +51,7 @@ export async function trackOrder(_prev: TrackState, formData: FormData): Promise
         items: (data.order_items ?? []) as { name: string; quantity: number }[],
         trackingNumber: tracking,
         trackingUrl: tracking ? uspsTrackingUrl(tracking) : null,
+        pickup: data.fulfillment === "pickup",
       },
     };
   } catch (e) {

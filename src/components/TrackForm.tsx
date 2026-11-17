@@ -37,9 +37,19 @@ export function TrackForm() {
         <div role="status" className="border-t border-line pt-8">
           <p className="font-display text-2xl">Order #{o.number}</p>
           <p className="text-sm opacity-70">Placed {new Date(o.createdAt).toLocaleDateString("en-US", { dateStyle: "long", timeZone: "America/Chicago" })}</p>
-          <p className="label mt-4 text-gold-text">{labels[o.status] ?? o.status}</p>
+          <p className="label mt-4 text-gold-text">
+            {o.pickup && o.status === "fulfilled" ? "Ready for pickup" : o.pickup && o.status === "paid" ? "Paid, being prepared for pickup" : labels[o.status] ?? o.status}
+          </p>
           <p className="mt-3 text-sm">{o.items.map((i) => `${i.name} × ${i.quantity}`).join(", ")}</p>
-          {o.trackingNumber && o.trackingUrl ? (
+          {o.pickup ? (
+            o.status !== "cancelled" && (
+              <p className="mt-6 text-sm">
+                {o.status === "fulfilled"
+                  ? "We emailed you the pickup location and time. Reply to that email if you need a different time."
+                  : "We'll email you the pickup location and time once your order is processed and ready for pickup."}
+              </p>
+            )
+          ) : o.trackingNumber && o.trackingUrl ? (
             <div className="mt-6">
               <p className="label">USPS tracking number</p>
               <p className="mt-1 tracking-wide">{o.trackingNumber}</p>

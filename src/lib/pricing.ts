@@ -10,6 +10,14 @@ export function shippingFeeFor(state: string, settings: ShippingSettings): numbe
   return settings.fixedFeeStates.includes(state.toUpperCase()) ? settings.fixedFee : settings.otherFee;
 }
 
+/** The first five digits of a US ZIP code ("77449-1234" gives "77449"). */
+export const zip5 = (postalCode: string) => postalCode.trim().slice(0, 5);
+
+/** Whether free local pickup can be chosen for this ZIP code. */
+export function pickupAllowed(postalCode: string, settings: ShippingSettings): boolean {
+  return settings.pickupEnabled && settings.pickupZips.includes(zip5(postalCode));
+}
+
 export type VariantRecord = {
   id: string;
   label: string;
@@ -75,6 +83,8 @@ export function priceOrder(
   settings: ShippingSettings,
   /** undefined: no code entered. null: a code was entered but does not exist. */
   discountCode?: DiscountRecord | null,
+  /** Local pickup has no shipping fee. The caller checks the ZIP code. */
+  pickup = false,
 ): PricedOrder {
   if (!isUsState(state.toUpperCase())) throw new CheckoutError("Choose a valid delivery state.");
   if (requested.length === 0) throw new CheckoutError("Your bag is empty.");
@@ -104,7 +114,7 @@ export function priceOrder(
 
   const subtotal = lines.reduce((sum, l) => sum + l.price * l.quantity, 0);
   const discount = discountCode === undefined ? 0 : discountFor(discountCode, subtotal);
-  const shippingFee = shippingFeeFor(state, settings);
+  const shippingFee = pickup ? 0 : shippingFeeFor(state, settings);
   // Square cannot take a card payment under $1.00.
   if (discount > 0 && subtotal - discount + shippingFee < 100) throw new CheckoutError("With that code the order would be under $1, which cards can't be charged for.");
   return {

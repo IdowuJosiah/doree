@@ -1,7 +1,7 @@
 import "server-only";
 import { createServiceClient } from "../supabase/service";
 import { notifyAddress, sendEmail, siteUrl } from "./send";
-import { customerConfirmation, newOrderAlert, orderShipped, paymentReviewAlert, type EmailOrder } from "./templates";
+import { customerConfirmation, newOrderAlert, orderReadyForPickup, orderShipped, paymentReviewAlert, type EmailOrder } from "./templates";
 
 async function loadOrder(orderId: string): Promise<EmailOrder | null> {
   const { data: o, error } = await createServiceClient()
@@ -23,6 +23,7 @@ async function loadOrder(orderId: string): Promise<EmailOrder | null> {
     discount: o.discount_amount ?? 0,
     discountCode: o.discount_code ?? null,
     trackingNumber: o.tracking_number ?? null,
+    pickup: o.fulfillment === "pickup",
     shippingFee: o.shipping_fee,
     total: o.total,
     items: o.order_items ?? [],
@@ -43,13 +44,13 @@ export async function sendOrderEmails(orderId: string) {
   ]);
 }
 
-/** Tells the customer their order has been sent. Returns whether it went out. */
+/** Tells the customer their order has been sent (or is ready for pickup). Returns whether it went out. */
 export async function sendShippedEmail(orderId: string, message: string) {
   const order = await loadOrder(orderId);
   if (!order) return false;
   return sendEmail({
     to: order.email,
-    email: orderShipped(order, siteUrl(), message),
+    email: order.pickup ? orderReadyForPickup(order, siteUrl(), message) : orderShipped(order, siteUrl(), message),
     replyTo: notifyAddress() || undefined,
     idempotencyKey: `order-${order.id}-shipped-${order.trackingNumber ?? "none"}`,
   });

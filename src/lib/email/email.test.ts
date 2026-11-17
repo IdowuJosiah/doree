@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { sendEmail } from "./send";
-import { contactAlert, customerConfirmation, escapeHtml, newOrderAlert, orderShipped, type EmailOrder } from "./templates";
+import { contactAlert, customerConfirmation, escapeHtml, newOrderAlert, orderReadyForPickup, orderShipped, type EmailOrder } from "./templates";
 
 const order: EmailOrder = {
   id: "0b8a3c1e-5d7f-4a62-9c1d-2f4e6a8b0c3d",
@@ -52,6 +52,21 @@ describe("email templates", () => {
     expect(html).toContain("https://tools.usps.com/go/TrackConfirmAction?tLabels=9400111899223197428490");
     expect(text).toContain("USPS tracking number: 9400111899223197428490");
     expect(orderShipped(order, "", "").html).not.toContain("Track your package");
+  });
+
+  it("handles local pickup orders without an address", () => {
+    const p: EmailOrder = { ...order, pickup: true, shippingFee: 0, total: 13600, address: { postalCode: "77449", state: "TX" } };
+    const confirm = customerConfirmation(p, "");
+    expect(confirm.html).toContain("Local pickup");
+    expect(confirm.html).not.toContain("Delivering to");
+    expect(confirm.text).toContain("pickup location and time");
+    const alert = newOrderAlert(p, "");
+    expect(alert.subject).toBe("New pickup order #1001: $136.00");
+    expect(alert.text).toContain("Local pickup (customer ZIP code 77449)");
+    const ready = orderReadyForPickup(p, "", "Saturday 2pm, <Katy> Mills entrance");
+    expect(ready.subject).toBe("Your Dorée order #1001 is ready for pickup");
+    expect(ready.html).toContain("Saturday 2pm, &lt;Katy&gt; Mills entrance");
+    expect(ready.html).not.toContain("Track your package");
   });
 
   it("leaves the note out when there is none", () => {

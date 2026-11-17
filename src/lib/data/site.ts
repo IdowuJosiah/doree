@@ -128,17 +128,41 @@ export type ShippingSettings = {
   fixedFee: number;
   /** Cents, for every state not in the fixed-fee list. */
   otherFee: number;
+  /** Free local pickup, offered only to the ZIP codes listed. */
+  pickupEnabled: boolean;
+  pickupZips: string[];
+  /** Shown under the pickup option at checkout. */
+  pickupNote: string;
 };
 
-export const emptyShipping: ShippingSettings = { fixedFeeStates: [], fixedFee: 0, otherFee: 0 };
+export const emptyShipping: ShippingSettings = { fixedFeeStates: [], fixedFee: 0, otherFee: 0, pickupEnabled: false, pickupZips: [], pickupNote: "" };
 
-export const toShippingSettings = (row: { fixed_fee_states: string[]; fixed_fee: number; other_fee: number } | null): ShippingSettings =>
-  row ? { fixedFeeStates: row.fixed_fee_states, fixedFee: row.fixed_fee, otherFee: row.other_fee } : emptyShipping;
+export type ShippingRow = {
+  fixed_fee_states: string[];
+  fixed_fee: number;
+  other_fee: number;
+  // Missing until migration 0011 has been run.
+  pickup_enabled?: boolean;
+  pickup_zips?: string[];
+  pickup_note?: string;
+};
+
+export const toShippingSettings = (row: ShippingRow | null): ShippingSettings =>
+  row
+    ? {
+        fixedFeeStates: row.fixed_fee_states,
+        fixedFee: row.fixed_fee,
+        otherFee: row.other_fee,
+        pickupEnabled: Boolean(row.pickup_enabled) && (row.pickup_zips?.length ?? 0) > 0,
+        pickupZips: row.pickup_zips ?? [],
+        pickupNote: row.pickup_note ?? "",
+      }
+    : emptyShipping;
 
 export async function getShippingSettings(): Promise<ShippingSettings> {
   const db = publicClient();
   if (!db) return emptyShipping;
-  const { data, error } = await db.from("shipping_settings").select("fixed_fee_states, fixed_fee, other_fee").eq("id", 1).maybeSingle();
+  const { data, error } = await db.from("shipping_settings").select("*").eq("id", 1).maybeSingle<ShippingRow>();
   if (error) return onReadError(error, emptyShipping, "shipping settings");
   return toShippingSettings(data);
 }
