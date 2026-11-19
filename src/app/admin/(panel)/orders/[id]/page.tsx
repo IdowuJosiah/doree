@@ -55,7 +55,7 @@ export default async function OrderPage(props: { params: Promise<{ id: string }>
             {pickup ? (
               <tr><td colSpan={2}>Local pickup</td><td className="text-right">Free</td></tr>
             ) : (
-              <tr><td colSpan={2}>Shipping ({o.state})</td><td className="text-right">{formatPrice(o.shipping_fee)}</td></tr>
+              <tr><td colSpan={2}>Shipping ({o.state})</td><td className="text-right">{o.shipping_fee ? formatPrice(o.shipping_fee) : "Free"}</td></tr>
             )}
             <tr className="font-medium"><td colSpan={2}>Total</td><td className="text-right">{formatPrice(o.total)}</td></tr>
           </tbody>

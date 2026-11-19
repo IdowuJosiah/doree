@@ -9,9 +9,11 @@ export async function saveShipping(fd: FormData) {
   const db = await adminDb();
   let fixed: number;
   let other: number;
+  let freeMin: number | null = null;
   try {
     fixed = dollarsToCents(str(fd, "fixed_fee") || "0");
     other = dollarsToCents(str(fd, "other_fee") || "0");
+    if (str(fd, "free_shipping_min")) freeMin = dollarsToCents(str(fd, "free_shipping_min"));
   } catch (e) {
     fail("/admin/shipping", (e as Error).message);
   }
@@ -27,6 +29,7 @@ export async function saveShipping(fd: FormData) {
     pickup_enabled: fd.get("pickup_enabled") === "on",
     pickup_zips: [...new Set(zipParts)],
     pickup_note: str(fd, "pickup_note").slice(0, 1000),
+    free_shipping_min: freeMin && freeMin > 0 ? freeMin : null,
   });
   if (error) fail("/admin/shipping", error.message);
   refreshPublic();

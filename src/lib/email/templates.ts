@@ -72,7 +72,7 @@ function itemsTable(order: EmailOrder) {
     `<tr><td style="padding:4px 0;font-size:16px;${bold ? "font-weight:bold;" : ""}">${label}</td><td style="padding:4px 0;font-size:16px;text-align:right;${bold ? "font-weight:bold;" : ""}">${value}</td></tr>`;
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows}
 <tr><td colspan="2" style="height:8px;"></td></tr>
-${line("Subtotal", formatPrice(order.subtotal))}${order.discount ? line(`Discount (${escapeHtml(order.discountCode ?? "")})`, `−${formatPrice(order.discount)}`) : ""}${order.pickup ? line("Local pickup", "Free") : line("Shipping", formatPrice(order.shippingFee))}${line("Total", formatPrice(order.total), true)}</table>`;
+${line("Subtotal", formatPrice(order.subtotal))}${order.discount ? line(`Discount (${escapeHtml(order.discountCode ?? "")})`, `−${formatPrice(order.discount)}`) : ""}${order.pickup ? line("Local pickup", "Free") : line("Shipping", order.shippingFee ? formatPrice(order.shippingFee) : "Free")}${line("Total", formatPrice(order.total), true)}</table>`;
 }
 
 function itemsText(order: EmailOrder) {
@@ -81,7 +81,7 @@ function itemsText(order: EmailOrder) {
     "",
     `Subtotal  ${formatPrice(order.subtotal)}`,
     ...(order.discount ? [`Discount (${order.discountCode ?? ""})  -${formatPrice(order.discount)}`] : []),
-    order.pickup ? "Local pickup  Free" : `Shipping  ${formatPrice(order.shippingFee)}`,
+    order.pickup ? "Local pickup  Free" : `Shipping  ${order.shippingFee ? formatPrice(order.shippingFee) : "Free"}`,
     `Total     ${formatPrice(order.total)}`,
   ].join("\n");
 }

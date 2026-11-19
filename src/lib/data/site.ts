@@ -133,9 +133,11 @@ export type ShippingSettings = {
   pickupZips: string[];
   /** Shown under the pickup option at checkout. */
   pickupNote: string;
+  /** Cents. Orders at or above this (after discount) ship free; null for never. */
+  freeShippingMin: number | null;
 };
 
-export const emptyShipping: ShippingSettings = { fixedFeeStates: [], fixedFee: 0, otherFee: 0, pickupEnabled: false, pickupZips: [], pickupNote: "" };
+export const emptyShipping: ShippingSettings = { fixedFeeStates: [], fixedFee: 0, otherFee: 0, pickupEnabled: false, pickupZips: [], pickupNote: "", freeShippingMin: null };
 
 export type ShippingRow = {
   fixed_fee_states: string[];
@@ -145,6 +147,7 @@ export type ShippingRow = {
   pickup_enabled?: boolean;
   pickup_zips?: string[];
   pickup_note?: string;
+  free_shipping_min?: number | null; // migration 0012
 };
 
 export const toShippingSettings = (row: ShippingRow | null): ShippingSettings =>
@@ -156,6 +159,7 @@ export const toShippingSettings = (row: ShippingRow | null): ShippingSettings =>
         pickupEnabled: Boolean(row.pickup_enabled) && (row.pickup_zips?.length ?? 0) > 0,
         pickupZips: row.pickup_zips ?? [],
         pickupNote: row.pickup_note ?? "",
+        freeShippingMin: row.free_shipping_min ?? null,
       }
     : emptyShipping;
 

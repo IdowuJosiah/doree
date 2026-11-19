@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CheckoutError, discountFor, pickupAllowed, priceOrder, shippingFeeFor, type DiscountRecord, type VariantRecord } from "./pricing";
+import { CheckoutError, discountFor, pickupAllowed, qualifiesForFreeShipping, priceOrder, shippingFeeFor, type DiscountRecord, type VariantRecord } from "./pricing";
 import type { ShippingSettings } from "./data/site";
 
 const settings: ShippingSettings = {
@@ -9,6 +9,7 @@ const settings: ShippingSettings = {
   pickupEnabled: true,
   pickupZips: ["77449", "77406", "77407"],
   pickupNote: "",
+  freeShippingMin: null,
 };
 
 const variant = (id: string, over: Partial<VariantRecord["product"]> = {}, stock = 5): VariantRecord => ({
@@ -119,5 +120,26 @@ describe("local pickup", () => {
     const priced = priceOrder([{ variantId: "a", quantity: 1 }], [variant("a")], "TX", settings, undefined, true);
     expect(priced.shippingFee).toBe(0);
     expect(priced.total).toBe(6800);
+  });
+});
+
+describe("free shipping", () => {
+  const free = { ...settings, freeShippingMin: 12500 };
+  const v = [variant("a", { price: 6250 })];
+
+  it("ships free at $125 and up", () => {
+    expect(priceOrder([{ variantId: "a", quantity: 2 }], v, "CA", free).shippingFee).toBe(0);
+    expect(priceOrder([{ variantId: "a", quantity: 1 }], v, "CA", free).shippingFee).toBe(1500);
+  });
+
+  it("counts the subtotal after the discount", () => {
+    const code: DiscountRecord = { code: "TEN", percent: 10, active: true, starts_at: null, ends_at: null, max_uses: null, uses: 0, min_subtotal: 0 };
+    const priced = priceOrder([{ variantId: "a", quantity: 2 }], v, "CA", free, code);
+    expect(priced.discount).toBe(1250);
+    expect(priced.shippingFee).toBe(1500);
+  });
+
+  it("is off when no minimum is set", () => {
+    expect(qualifiesForFreeShipping(1_000_000, settings)).toBe(false);
   });
 });

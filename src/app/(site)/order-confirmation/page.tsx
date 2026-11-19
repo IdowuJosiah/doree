@@ -45,7 +45,7 @@ export default async function OrderConfirmation(props: { searchParams: Promise<{
               {order.fulfillment === "pickup" ? (
                 <div className="flex justify-between"><dt>Local pickup</dt><dd>Free</dd></div>
               ) : (
-                <div className="flex justify-between"><dt>Shipping</dt><dd>{formatPrice(order.shipping_fee)}</dd></div>
+                <div className="flex justify-between"><dt>Shipping</dt><dd>{order.shipping_fee ? formatPrice(order.shipping_fee) : "Free"}</dd></div>
               )}
               <div className="flex justify-between text-base font-medium"><dt>Total</dt><dd>{formatPrice(order.total)}</dd></div>
             </dl>

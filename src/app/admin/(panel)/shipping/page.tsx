@@ -25,6 +25,16 @@ export default async function ShippingPage(props: { searchParams: Promise<{ erro
             <Field label="Fixed fee (USD)" name="fixed_fee" type="number" step="0.01" defaultValue={centsToDollars(s.fixedFee)} required />
             <Field label="Additional fee (USD)" name="other_fee" type="number" step="0.01" defaultValue={centsToDollars(s.otherFee)} required />
           </div>
+          <div className="mt-5 max-w-md">
+            <Field
+              label="Free shipping on orders from (USD)"
+              name="free_shipping_min"
+              type="number"
+              step="0.01"
+              defaultValue={s.freeShippingMin === null ? "" : centsToDollars(s.freeShippingMin)}
+              hint="Counted after any discount code. Leave empty to turn free shipping off."
+            />
+          </div>
         </Card>
         <Card title="Fixed-fee states">
           <ul className="grid grid-cols-2 gap-x-6 sm:grid-cols-3 lg:grid-cols-4">

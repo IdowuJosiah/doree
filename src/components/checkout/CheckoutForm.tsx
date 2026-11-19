@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import type { ShippingSettings } from "@/lib/data/site";
 import { formatPrice } from "@/lib/format";
-import { shippingFeeFor } from "@/lib/pricing";
+import { qualifiesForFreeShipping, shippingFeeFor } from "@/lib/pricing";
 import { US_STATES } from "@/lib/us-states";
 import { useCart } from "../store/Cart";
 import { SquareCard } from "./SquareCard";
@@ -53,7 +53,11 @@ export function CheckoutForm({ shipping, square }: { shipping: ShippingSettings;
     );
   }
 
-  const estimateFee = pickup ? 0 : state ? shippingFeeFor(state, shipping) : null;
+  // Before the order is created this is an estimate; a discount code can bring
+  // the order back under the free-shipping amount.
+  const freeShipping = qualifiesForFreeShipping(subtotal, shipping);
+  const estimateFee = pickup || freeShipping ? 0 : state ? shippingFeeFor(state, shipping) : null;
+  const toFree = shipping.freeShippingMin !== null && !pickup && !freeShipping ? shipping.freeShippingMin - subtotal : 0;
   const shown = order ?? { subtotal, discount: 0, discountCode: null, shippingFee: estimateFee ?? 0, total: subtotal + (estimateFee ?? 0) };
   const paymentsConfigured = Boolean(square.appId && square.locationId);
 
@@ -121,8 +125,11 @@ export function CheckoutForm({ shipping, square }: { shipping: ShippingSettings;
             )}
             <div className="flex justify-between">
               <dt>{pickup ? "Local pickup" : "Shipping"}</dt>
-              <dd>{pickup ? "Free" : order || estimateFee !== null ? formatPrice(shown.shippingFee) : "Choose your state"}</dd>
+              <dd>{pickup || ((order || estimateFee !== null) && shown.shippingFee === 0) ? "Free" : order || estimateFee !== null ? formatPrice(shown.shippingFee) : "Choose your state"}</dd>
             </div>
+            {!order && toFree > 0 && (
+              <p className="text-xs text-gold-text">Add {formatPrice(toFree)} more for free shipping.</p>
+            )}
             <div className="flex justify-between pt-2 text-base font-medium"><dt>Total</dt><dd>{formatPrice(shown.total)}</dd></div>
           </dl>
         </div>

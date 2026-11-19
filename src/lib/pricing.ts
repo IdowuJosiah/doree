@@ -10,6 +10,11 @@ export function shippingFeeFor(state: string, settings: ShippingSettings): numbe
   return settings.fixedFeeStates.includes(state.toUpperCase()) ? settings.fixedFee : settings.otherFee;
 }
 
+/** Whether an order of this amount (subtotal after discount) ships free. */
+export function qualifiesForFreeShipping(amount: number, settings: ShippingSettings): boolean {
+  return settings.freeShippingMin !== null && amount >= settings.freeShippingMin;
+}
+
 /** The first five digits of a US ZIP code ("77449-1234" gives "77449"). */
 export const zip5 = (postalCode: string) => postalCode.trim().slice(0, 5);
 
@@ -114,7 +119,7 @@ export function priceOrder(
 
   const subtotal = lines.reduce((sum, l) => sum + l.price * l.quantity, 0);
   const discount = discountCode === undefined ? 0 : discountFor(discountCode, subtotal);
-  const shippingFee = pickup ? 0 : shippingFeeFor(state, settings);
+  const shippingFee = pickup || qualifiesForFreeShipping(subtotal - discount, settings) ? 0 : shippingFeeFor(state, settings);
   // Square cannot take a card payment under $1.00.
   if (discount > 0 && subtotal - discount + shippingFee < 100) throw new CheckoutError("With that code the order would be under $1, which cards can't be charged for.");
   return {
