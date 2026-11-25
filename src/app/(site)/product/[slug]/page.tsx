@@ -8,6 +8,9 @@ import { Reveal } from "@/components/Reveal";
 import { getProductBySlug, listCollectionsForProduct, listProducts } from "@/lib/data/catalog";
 import { formatPrice } from "@/lib/format";
 import { siteConfig } from "@/lib/config";
+import { getShippingSettings } from "@/lib/data/site";
+import { SITE_URL } from "@/lib/site-url";
+import { productJsonLd } from "@/lib/structured-data";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -41,22 +44,10 @@ export default async function ProductPage(props: Props) {
   const params = await props.params;
   const product = await getProductBySlug(params.slug);
   if (!product) notFound();
-  const [all, inCollections] = await Promise.all([listProducts(), listCollectionsForProduct(product.id)]);
+  const [all, inCollections, shipping] = await Promise.all([listProducts(), listCollectionsForProduct(product.id), getShippingSettings()]);
   const related = all.filter((p) => p.id !== product.id && !p.soldOut).slice(0, 4);
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: product.name,
-    description: product.description,
-    image: product.images.flatMap((i) => (i.src ? [i.src] : [])),
-    offers: {
-      "@type": "Offer",
-      price: (product.price / 100).toFixed(2),
-      priceCurrency: siteConfig.currency,
-      availability: product.soldOut ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
-    },
-  };
+  const jsonLd = productJsonLd(product, shipping, SITE_URL);
 
   return (
     <>
