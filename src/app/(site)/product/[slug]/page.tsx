@@ -10,7 +10,7 @@ import { formatPrice } from "@/lib/format";
 import { siteConfig } from "@/lib/config";
 import { getShippingSettings } from "@/lib/data/site";
 import { SITE_URL } from "@/lib/site-url";
-import { productJsonLd } from "@/lib/structured-data";
+import { productJsonLd, productSummary } from "@/lib/structured-data";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -21,10 +21,11 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const product = await getProductBySlug(params.slug);
   if (!product) return {};
   const image = product.images[0]?.src;
+  const description = productSummary(product);
   return {
     title: product.name,
-    description: product.description,
-    openGraph: { siteName: siteConfig.name, locale: "en_US", type: "website", title: product.name, description: product.description, images: image ? [image] : [] },
+    description,
+    openGraph: { siteName: siteConfig.name, locale: "en_US", type: "website", title: product.name, description, images: image ? [image] : [] },
   };
 }
 

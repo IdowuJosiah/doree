@@ -8,7 +8,18 @@ const HANDLING_DAYS = { min: 1, max: 3 };
 const TRANSIT_DAYS = { min: 3, max: 5 };
 const RETURN_DAYS = 14;
 
-type ProductInput = { name: string; slug: string; description: string; price: number; soldOut: boolean; images: { src?: string }[] };
+type ProductInput = { name: string; slug: string; description: string; materials?: string; price: number; soldOut: boolean; images: { src?: string }[] };
+
+/**
+ * The product's description, or a short one made from its name and materials
+ * when Dorée has not written one yet (Google and link previews need text).
+ */
+export function productSummary(p: { name: string; description: string; materials?: string }): string {
+  const own = p.description.trim();
+  if (own) return own;
+  const materials = p.materials?.trim().replace(/\.$/, "");
+  return [`${p.name} by ${siteConfig.name}.`, materials ? `Materials: ${materials}.` : "", "Everyday jewelry, made to be worn."].filter(Boolean).join(" ");
+}
 
 const money = (cents: number) => (cents / 100).toFixed(2);
 
@@ -38,7 +49,7 @@ export function productJsonLd(p: ProductInput, shipping: ShippingSettings, siteU
     "@context": "https://schema.org",
     "@type": "Product",
     name: p.name,
-    description: p.description,
+    description: productSummary(p),
     url,
     sku: p.slug,
     image: p.images.flatMap((i) => (i.src ? [i.src] : [])),
